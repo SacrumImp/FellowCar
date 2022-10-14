@@ -14,7 +14,7 @@ data class RegisterData(
     val passwordConfirmation: CharSequence,
 )
 
-class UserManager {
+class UserRepository {
     suspend fun syncUser() {
         TODO()
     }

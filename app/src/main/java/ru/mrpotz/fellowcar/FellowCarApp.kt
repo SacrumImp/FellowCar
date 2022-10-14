@@ -1,10 +1,10 @@
 package ru.mrpotz.fellowcar
 
 import android.app.Application
-import ru.mrpotz.fellowcar.logics.UserManager
+import ru.mrpotz.fellowcar.logics.UserRepository
 
 class Dependencies(
-    val userManager : UserManager,
+    val userManager : UserRepository,
 ) {
 
 }
@@ -14,7 +14,7 @@ class FellowCarApp : Application() {
 
 
     override fun onCreate() {
-        dependencies = Dependencies(UserManager())
+        dependencies = Dependencies(UserRepository())
 
         super.onCreate()
     }
