@@ -84,4 +84,7 @@ dependencies {
 
     // placeholders lib
     implementation "com.google.accompanist:accompanist-placeholder-material:0.26.5-rc"
+
+    // user preferences
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 }

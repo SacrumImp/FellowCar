@@ -1,5 +1,7 @@
 package ru.mrpotz.fellowcar.models
 
+import ru.mrpotz.fellowcar.logics.ValidEmail
+
 data class CarSpecification(val description: String)
 
 sealed class Role {
@@ -28,14 +30,15 @@ value class Rating(val rating: Double) {
     }
 }
 
-data class Profile(val description : String,)
+data class Profile(val description : String?)
 
 data class User(
     val id: String,
     val name: String,
+    val email : ValidEmail,
     val roles: List<Role>,
     val joinedCommunities: List<Community>,
-    val rating: Double,
+    val rating: Double?,
     val profile: Profile
 ) {
 
