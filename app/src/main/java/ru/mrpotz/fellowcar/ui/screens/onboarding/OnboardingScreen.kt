@@ -11,7 +11,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.core.screen.Screen
 import ru.mrpotz.fellowcar.ui.shared.ImagePlaceholder
+
+class OnboardingViewModel : ScreenModel {
+    fun onClickGetStarted() {
+
+    }
+}
+
+object OnboardingScreen : Screen {
+    @Composable
+    override fun Content() {
+        val onboardingScreenModel = rememberScreenModel {
+            OnboardingViewModel()
+        }
+        OnboardingScreen(
+            onClickGetStarted = onboardingScreenModel::onClickGetStarted
+        )
+    }
+}
 
 @Composable
 fun OnboardingScreen(modifier: Modifier = Modifier, onClickGetStarted: () -> Unit) {

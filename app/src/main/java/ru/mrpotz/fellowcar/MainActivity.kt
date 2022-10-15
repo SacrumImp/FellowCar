@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.Navigation
+import cafe.adriel.voyager.navigator.Navigator
 import ru.mrpotz.fellowcar.ui.screens.onboarding.OnboardingScreen
 import ru.mrpotz.fellowcar.ui.theme.FellowCarTheme
 
@@ -17,9 +19,8 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background) {
-                    OnboardingScreen() {
+                    Navigator(OnboardingScreen)
 
-                    }
                 }
             }
         }
