@@ -12,6 +12,7 @@ import ru.mrpotz.fellowcar.models.Profile
 import ru.mrpotz.fellowcar.models.User
 import ru.mrpotz.fellowcar.ui.models.PasswordHash
 import ru.mrpotz.fellowcar.ui.models.UserLocal
+import ru.mrpotz.fellowcar.utils.Mock
 import ru.mrpotz.fellowcar.utils.StringHasher
 
 @JvmInline
@@ -44,14 +45,12 @@ data class RegisterData(
  *
  */
 enum class UserStoreType {
-    LOCAL, REMOTE_MOCK
+    LOCAL, @Mock REMOTE_MOCK
 }
 
 // TODO A-69: move to User - define CRUD for local storage
 class UserDataStore(val context: Context, val userStore: UserStoreType = UserStoreType.LOCAL) {
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = userStore.name)
-
-    private val MOCK_PASSWORD_HASH = intPreferencesKey("mock_password")
 
     suspend fun getUser(): UserLocal? {
         return context.userDataStore.data.single().let {

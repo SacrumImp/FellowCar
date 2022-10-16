@@ -5,9 +5,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import ru.mrpotz.fellowcar.logics.LoggingData
 import ru.mrpotz.fellowcar.logics.RegisterData
+import ru.mrpotz.fellowcar.utils.Mock
 import ru.mrpotz.fellowcar.utils.StringHasher
 
 @JvmInline
+@Mock
 value class PasswordHash(val value : String)
 
 data class UiRequestedAction(
