@@ -3,10 +3,10 @@ package ru.mrpotz.fellowcar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import androidx.navigation.Navigation
 import cafe.adriel.voyager.navigator.Navigator
 import ru.mrpotz.fellowcar.ui.screens.onboarding.OnboardingScreen
 import ru.mrpotz.fellowcar.ui.theme.FellowCarTheme

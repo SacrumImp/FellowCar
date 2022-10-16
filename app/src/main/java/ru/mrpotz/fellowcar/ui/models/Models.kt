@@ -5,6 +5,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import ru.mrpotz.fellowcar.logics.LoggingData
 import ru.mrpotz.fellowcar.logics.RegisterData
+import ru.mrpotz.fellowcar.utils.StringHasher
+
+@JvmInline
+value class PasswordHash(val value : String)
 
 data class UiRequestedAction(
     val id: String,
@@ -22,7 +26,7 @@ data class UserLocal(
     val userId: String,
     val name: String,
     val email: String,
-    val passwordHash: String
+    val passwordHash: PasswordHash
 ) {
     fun compareAgainsRegisterData(registerData: RegisterData, ): Boolean {
         val comparedUser = UserLocal(
@@ -35,10 +39,12 @@ data class UserLocal(
     }
 
     fun compareAgainstLoginData(loginData: LoggingData): Boolean {
+        val passwordHash = StringHasher.getStringHash(loginData.password.password) ?: return false
         val comparedUser = UserLocal(
             userId = this.userId,
             name = this.name,
-            email = loginData
+            email = loginData.email.email,
+            passwordHash =  PasswordHash(passwordHash)
         )
         return comparedUser == this
     }
@@ -68,7 +74,7 @@ data class UserLocal(
                 userId = it[USER_ID] ?: return null,
                 name = it[NAME_KEY] ?: return null,
                 email = it[EMAIL] ?: return null,
-
+                passwordHash = PasswordHash(it[PASSWORD_HASH] ?: return null)
             )
         }
     }

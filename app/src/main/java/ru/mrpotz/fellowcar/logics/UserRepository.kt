@@ -10,10 +10,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.single
 import ru.mrpotz.fellowcar.models.Profile
 import ru.mrpotz.fellowcar.models.User
+import ru.mrpotz.fellowcar.ui.models.PasswordHash
 import ru.mrpotz.fellowcar.ui.models.UserLocal
-import ru.mrpotz.fellowcar.ui.models.UserLocal.Companion.EMAIL
-import ru.mrpotz.fellowcar.ui.models.UserLocal.Companion.NAME_KEY
-import ru.mrpotz.fellowcar.ui.models.UserLocal.Companion.USER_ID
+import ru.mrpotz.fellowcar.utils.StringHasher
 
 @JvmInline
 value class ValidEmail(val email: String)
@@ -21,10 +20,9 @@ value class ValidEmail(val email: String)
 @JvmInline
 value class Password(val password: CharSequence)
 
-
 data class LoggingData(
-    val email: CharSequence,
-    val password: CharSequence,
+    val email: ValidEmail,
+    val password: Password,
 )
 
 data class RegisterData(
@@ -32,9 +30,7 @@ data class RegisterData(
     val email: ValidEmail,
     val password: Password,
     val passwordConfirmation: Password,
-) {
-
-}
+)
 
 /**
  * MEMORY
@@ -59,11 +55,7 @@ class UserDataStore(val context: Context, val userStore: UserStoreType = UserSto
 
     suspend fun getUser(): UserLocal? {
         return context.userDataStore.data.single().let {
-            UserLocal(
-                name = it[NAME_KEY] ?: return null,
-                email = it[EMAIL] ?: return null,
-                userId = it[USER_ID] ?: return null,
-            )
+            UserLocal.createFromPreferences(it)
         }
     }
 
@@ -96,16 +88,20 @@ class UserLocalConverter() {
         )
     }
 
-    fun dtoToUserLocal(user: User) : UserLocal {
+    fun dtoToUserLocal(user: User, passwordHash: PasswordHash): UserLocal {
         return UserLocal(
             userId = user.id,
             name = user.name,
-            email = user.name
+            email = user.name,
+            passwordHash = passwordHash
         )
     }
 }
 
-class UserRepository(private val context: Context, private val userLocalConverter: UserLocalConverter) {
+class UserRepository(
+    private val context: Context,
+    private val userLocalConverter: UserLocalConverter,
+) {
     private val localUserDataStore = UserDataStore(context, userStore = UserStoreType.LOCAL)
     private val remoteMockUserDataStore =
         UserDataStore(context, userStore = UserStoreType.REMOTE_MOCK)
@@ -118,10 +114,6 @@ class UserRepository(private val context: Context, private val userLocalConverte
         return localUserDataStore.getUser()
     }
 
-    private fun tryLoadRegisteredUser(registerData: RegisterData): Result<User> {
-
-    }
-
     suspend fun syncUser() {
         TODO()
     }
@@ -129,34 +121,23 @@ class UserRepository(private val context: Context, private val userLocalConverte
     suspend fun getCurrentLoggedUser(): Result<User> {
         val datastoreUser = tryLoadLocalUser()
             ?: return Result.failure(UserError.NoUserAtPreferences)
-
+        return userLocalConverter.convertUserLocalToDomain(datastoreUser).let {
+            Result.success(it)
+        }
     }
 
     suspend fun logUser(loggingData: LoggingData): Result<User> {
         delay(300L) // connection imitation
         // TODO: A-69 add crud for multiple users
         val getCurrentRegisteredUser = remoteMockUserDataStore.getUser()
-        val newUser = if (getCurrentRegisteredUser != null && getCurrentRegisteredUser.compareAgainsRegisterData(
-                registerData)
+        if (getCurrentRegisteredUser == null || !getCurrentRegisteredUser.compareAgainstLoginData(
+                loggingData)
         ) {
             // users are equal, there is such already registered user
-            return Result.failure(UserError.GivenUserAlreadyRegistered)
-        } else {
-            val newDomainUser = User(
-                id = "mock_user_id",
-                name = registerData.fullName.toString(),
-                email  = registerData.email,
-                roles = listOf(),
-                joinedCommunities = listOf(),
-                rating = null,
-                profile = Profile(null)
-            )
-            newDomainUser
+            return Result.failure(UserError.LoginCredentialsInvalid)
         }
-        val newLocalUser = userLocalConverter.dtoToUserLocal(newUser)
-        remoteMockUserDataStore.updateUser(newLocalUser)
-        return Result.success(newUser)
-
+        val user = userLocalConverter.convertUserLocalToDomain(userLocal = getCurrentRegisteredUser)
+        return Result.success(user)
     }
 
     suspend fun isUserLoggedIn(): Boolean {
@@ -174,24 +155,28 @@ class UserRepository(private val context: Context, private val userLocalConverte
         delay(300L) // connection imitation
         // TODO: A-69 add crud for multiple users
         val getCurrentRegisteredUser = remoteMockUserDataStore.getUser()
-        val newUser = if (getCurrentRegisteredUser != null && getCurrentRegisteredUser.compareAgainsRegisterData(
-                registerData)
-        ) {
-            // users are equal, there is such already registered user
-            return Result.failure(UserError.GivenUserAlreadyRegistered)
-        } else {
-            val newDomainUser = User(
-                id = "mock_user_id",
-                name = registerData.fullName.toString(),
-                email  = registerData.email,
-                roles = listOf(),
-                joinedCommunities = listOf(),
-                rating = null,
-                profile = Profile(null)
-            )
-            newDomainUser
-        }
-        val newLocalUser = userLocalConverter.dtoToUserLocal(newUser)
+        val newUser =
+            if (getCurrentRegisteredUser != null && getCurrentRegisteredUser.compareAgainsRegisterData(
+                    registerData)
+            ) {
+                // users are equal, there is such already registered user
+                return Result.failure(UserError.GivenUserAlreadyRegistered)
+            } else {
+                val newDomainUser = User(
+                    id = "mock_user_id",
+                    name = registerData.fullName.toString(),
+                    email = registerData.email,
+                    roles = listOf(),
+                    joinedCommunities = listOf(),
+                    rating = null,
+                    profile = Profile(null)
+                )
+                newDomainUser
+            }
+        val newLocalUser =
+            userLocalConverter.dtoToUserLocal(newUser, passwordHash = PasswordHash(StringHasher.getStringHash(
+                registerData.password.password) ?: return Result.failure(
+                UserError.ImpossibleToHashPassword)))
         remoteMockUserDataStore.updateUser(newLocalUser)
         return Result.success(newUser)
     }
@@ -199,6 +184,7 @@ class UserRepository(private val context: Context, private val userLocalConverte
 
 sealed class UserError(message: String) : Throwable(message) {
     object NoUserAtPreferences : UserError("no users logged in on the device")
+    object ImpossibleToHashPassword : UserError("can't process password")
     object NetworkLoadFailed : UserError("network load failed")
     object GivenUserAlreadyRegistered : UserError("user already registered")
     object LoginCredentialsInvalid : UserError("user was not found")
