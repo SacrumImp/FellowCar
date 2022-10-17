@@ -11,3 +11,5 @@ val PrimaryMain = Color(0xFF465EFB)
 val PrimarySecondary = Color(0xFF3987D0)
 val SecondaryMain = Color(0xFF349F3C)
 
+val LinkColor = Color(0xFF6F4CE5)
+

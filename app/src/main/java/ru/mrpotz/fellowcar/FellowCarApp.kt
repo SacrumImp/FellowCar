@@ -1,6 +1,8 @@
 package ru.mrpotz.fellowcar
 
 import android.app.Application
+import android.util.Log
+import ru.mrpotz.fellowcar.logics.UserLocalConverter
 import ru.mrpotz.fellowcar.logics.UserRepository
 
 class Dependencies(
@@ -14,8 +16,10 @@ class FellowCarApp : Application() {
 
 
     override fun onCreate() {
-        dependencies = Dependencies(UserRepository())
+        val dependencies = Dependencies(UserRepository(context = this.baseContext, userLocalConverter = UserLocalConverter()))
+        this.dependencies = dependencies
         _dependencies = dependencies
+        Log.d("FellowCarApp", "dependencies: $dependencies")
         super.onCreate()
     }
 

@@ -1,12 +1,14 @@
 package ru.mrpotz.fellowcar.logics
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.single
 import ru.mrpotz.fellowcar.models.Profile
 import ru.mrpotz.fellowcar.models.User
@@ -53,7 +55,7 @@ class UserDataStore(val context: Context, val userStore: UserStoreType = UserSto
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = userStore.name)
 
     suspend fun getUser(): UserLocal? {
-        return context.userDataStore.data.single().let {
+        return context.userDataStore.data.first().let {
             UserLocal.createFromPreferences(it)
         }
     }
@@ -120,6 +122,8 @@ class UserRepository(
     suspend fun getCurrentLoggedUser(): Result<User> {
         val datastoreUser = tryLoadLocalUser()
             ?: return Result.failure(UserError.NoUserAtPreferences)
+        Log.d("UserRepository", "$datastoreUser")
+
         return userLocalConverter.convertUserLocalToDomain(datastoreUser).let {
             Result.success(it)
         }
