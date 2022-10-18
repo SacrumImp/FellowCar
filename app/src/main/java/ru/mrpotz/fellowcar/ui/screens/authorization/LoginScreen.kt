@@ -50,12 +50,7 @@ class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRe
 
     init {
         coroutineScope.launch {
-            launch {
-                validationContainer.debouncedFlow.collect { it: List<FieldId> ->
-                    Log.d("LoginScreen", "collect happened, $it")
-                    val result = form.validate(it)
-                }
-            }
+            form.startValidation()
         }
     }
 
@@ -64,7 +59,7 @@ class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRe
     }
 
     fun onRegisterClick() {
-
+        localNavigator.push(RegistrationScreen)
     }
 
     fun onLoginClick() {
@@ -95,6 +90,68 @@ object LoginScreen : Screen {
 }
 
 @Composable
+fun PasswordErrorableTextField(
+    value : TextContainer.DataClass = TextContainer.DataClass("", null, null),
+    label : String = "Password",
+
+) {
+    var passwordVisibility by remember { mutableStateOf(false) }
+
+    TextField(
+        value = value.value.toString(),
+        onValueChange = { value.callback?.invoke(it) },
+        singleLine = true,
+        label = {
+            Text(label)
+        },
+        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            Row {
+                if (value.error != null)
+                    Icon(Icons.Filled.Info,
+                        value.error?.description,
+                        tint = MaterialTheme.colors.error,
+                        modifier = Modifier.align(Alignment.CenterVertically))
+
+                IconButton(onClick = {
+                    passwordVisibility = !passwordVisibility
+                }, modifier = Modifier.align(Alignment.CenterVertically)) {
+                    val image = if (passwordVisibility)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+                    val description =
+                        if (passwordVisibility) "Hide password" else "Show password"
+                    Icon(imageVector = image, description)
+                }
+            }
+        },
+        isError = value.error != null,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+fun ErrorableTextField(
+    label : String,
+    value : TextContainer.DataClass = TextContainer.DataClass("", null, null)
+) {
+    TextField(value = value.value.toString(),
+        onValueChange = { value.callback?.invoke(it) },
+        isError = value.error != null,
+        trailingIcon = {
+            if (value.error != null)
+                Icon(Icons.Filled.Info,
+                    value.error.description,
+                    tint = MaterialTheme.colors.error)
+        },
+        singleLine = true,
+        label = {
+            Text(label)
+        },
+        modifier = Modifier.fillMaxWidth())
+}
+
+@Composable
 fun LoginScreenComposable(
     emailValue: TextContainer.DataClass = TextContainer.DataClass("", null),
     passwordValue: TextContainer.DataClass = TextContainer.DataClass("", null),
@@ -111,7 +168,6 @@ fun LoginScreenComposable(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         FellowCarTitleHeader()
-        var passwordVisibility by remember { mutableStateOf(false) }
         Column(Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
@@ -126,54 +182,10 @@ fun LoginScreenComposable(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.size(16.dp))
-            TextField(value = emailValue.value.toString(),
-                onValueChange = { emailValue.callback?.invoke(it) },
-                isError = emailValue.error != null,
-                trailingIcon = {
-                    if (emailValue.error != null)
-                        Icon(Icons.Filled.Info,
-                            emailValue.error?.description,
-                            tint = MaterialTheme.colors.error)
-                },
-                singleLine = true,
-                label = {
-                    Text("Email")
-                },
-                modifier = Modifier.fillMaxWidth())
+            ErrorableTextField(label = "Email", value = emailValue)
             Spacer(Modifier.size(8.dp))
-            TextField(
-                value = passwordValue.value.toString(),
-                onValueChange = { passwordValue.callback?.invoke(it) },
-                singleLine = true,
-                label = {
-                    Text("Password")
-                },
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    Row {
-                        if (passwordValue.error != null)
-                            Icon(Icons.Filled.Info,
-                                passwordValue.error?.description,
-                                tint = MaterialTheme.colors.error,
-                                modifier = Modifier.align(Alignment.CenterVertically))
-
-                        IconButton(onClick = {
-                            passwordVisibility = !passwordVisibility
-                        }, modifier = Modifier.align(Alignment.CenterVertically)) {
-                            val image = if (passwordVisibility)
-                                Icons.Filled.Visibility
-                            else Icons.Filled.VisibilityOff
-                            val description =
-                                if (passwordVisibility) "Hide password" else "Show password"
-                            Icon(imageVector = image, description)
-                        }
-                    }
-                },
-                isError = passwordValue.error != null,
-                modifier = Modifier.fillMaxWidth()
-            )
+            PasswordErrorableTextField(passwordValue)
             Spacer(modifier = Modifier.size(16.dp))
-
             TextButton(onClick = onForgotClick, Modifier.align(Alignment.End)) {
                 Text(text = "Forgot password",
                     color = LinkColor,

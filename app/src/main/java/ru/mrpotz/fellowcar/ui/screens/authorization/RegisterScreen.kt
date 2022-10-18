@@ -1,13 +1,10 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -18,14 +15,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
 import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
+import ru.mrpotz.fellowcar.utils.TextContainer
 import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
 
 class RegistrationScreenModel : ScreenModel {
@@ -49,10 +47,24 @@ class RegistrationScreenModel : ScreenModel {
         }
         input(passwordConfirmation.fieldId, passwordConfirmation.valueContainer) {
             isNotEmpty()
-//            assert("passwords don't match") { confirmationContainer ->
-////                confirmationContainer.value == password.value
-//            }
+            assert("passwords must match") { confirmationContainer ->
+                confirmationContainer.value == password.valueContainer.value
+            }
         }
+    }
+
+    init {
+        coroutineScope.launch {
+            form.startValidation()
+        }
+    }
+
+    fun onLoginClick() {
+
+    }
+
+    fun onContinueClick() {
+
     }
 }
 
@@ -62,35 +74,28 @@ object RegistrationScreen : Screen {
         val viewModel = rememberScreenModel() {
             RegistrationScreenModel()
         }
-//        val name by viewModel.name.collectAsState()
-//        val passwordConfirmation by viewModel.passwordConfirmation.collectAsState()
-//        val email by viewModel.email.collectAsState()
-//        val password by viewModel.password.collectAsState()
-//
-//        RegistrationScreen(
-//            onFullNameValue = viewModel::onFullNameValue,
-//            onEmailValue = viewModel::onEmailValue,
-//            onPasswordConfirmationValue = viewModel::onPasswordConfirmationValue,
-//            onPasswordValue = viewModel::onPasswordValue,
-//            fullName = name,
-//            passwordConfirmationValue = passwordConfirmation,
-//            passwordValue = password,
-//            email = email
-//        )
+        val name by viewModel.fullName.flow.collectAsState()
+        val passwordConfirmation by viewModel.passwordConfirmation.flow.collectAsState()
+        val email by viewModel.email.flow.collectAsState()
+        val password by viewModel.password.flow.collectAsState()
+
+        RegistrationScreen(
+            fullName = name,
+            email = email,
+            password = password,
+            passwordConfirmation = passwordConfirmation
+        )
     }
 }
 
 @Composable
 fun RegistrationScreen(
-    fullName: String = "",
-    onFullNameValue: (newValue: String) -> Unit = { },
-    email: String = "",
-    onEmailValue: (newValue: String) -> Unit = { },
-    passwordValue: String = "",
-    onPasswordValue: (newValue: String) -> Unit = { },
-    passwordConfirmationValue: String = "",
-    onPasswordConfirmationValue: (newValue: String) -> Unit = { },
+    fullName: TextContainer.DataClass = TextContainer.DataClass("", null),
+    email: TextContainer.DataClass = TextContainer.DataClass("", null),
+    password: TextContainer.DataClass = TextContainer.DataClass("", null),
+    passwordConfirmation: TextContainer.DataClass = TextContainer.DataClass("", null),
     onLoginClick: () -> Unit = { },
+    onContinueClick: () -> Unit = { },
 ) {
     val scrollableState = rememberScrollState()
     Column(
@@ -104,50 +109,24 @@ fun RegistrationScreen(
     ) {
         FellowCarTitleHeader()
 
+
         Column(Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
-
             Text(text = "Register",
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.h5,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.size(8.dp))
-            TextField(value = fullName,
-                onValueChange = onFullNameValue,
-                singleLine = true,
-                label = {
-                    Text("Full name")
-                },
-                modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.size(8.dp))
-            TextField(value = email,
-                onValueChange = onEmailValue,
-                singleLine = true,
-                label = {
-                    Text("Email")
-                },
-                modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.size(8.dp))
 
-            TextField(
-                value = passwordValue, onValueChange = onPasswordValue, singleLine = true,
-                label = {
-                    Text("Password")
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Spacer(modifier = Modifier.size(24.dp))
+            ErrorableTextField(label = "Full Name", value = fullName)
+            Spacer(Modifier.size(8.dp))
+            ErrorableTextField(label = "Email", value = email)
+            Spacer(Modifier.size(8.dp))
+            PasswordErrorableTextField(password)
             Spacer(modifier = Modifier.size(8.dp))
-            TextField(
-                value = passwordConfirmationValue,
-                onValueChange = onPasswordConfirmationValue,
-                singleLine = true,
-                label = {
-                    Text("Password Confirmation")
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            PasswordErrorableTextField(passwordConfirmation, "Confirm Password")
         }
 
         Column(Modifier.fillMaxWidth()) {
@@ -162,7 +141,7 @@ fun RegistrationScreen(
                 }
             }
             Spacer(Modifier.size(16.dp))
-            Button(onClick = onLoginClick, modifier = Modifier
+            Button(onClick = onContinueClick, modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)) {
                 Text(text = "Continue →", style = MaterialTheme.typography.h6)

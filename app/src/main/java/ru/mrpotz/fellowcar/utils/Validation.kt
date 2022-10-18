@@ -32,7 +32,7 @@ open class TextContainer() : ValueContainer<CharSequence> {
     class DataClass constructor(
         override val value: CharSequence?,
         override val error: FieldError?,
-        override var callback: ((CharSequence?) -> Unit)?,
+        override var callback: ((CharSequence?) -> Unit)? = null,
     ) :
         ValueContainer.DataClass<CharSequence> {
     }
@@ -240,6 +240,7 @@ sealed class ValidationResult {
 interface ValidationContainer {
     fun getFieldName(id: FieldId): String
     fun markChanged(id: FieldId): Unit
+    val debouncedFlow : Flow<List<FieldId>>
 }
 
 class ValidationContainerImpl() : ValidationContainer {
@@ -248,7 +249,7 @@ class ValidationContainerImpl() : ValidationContainer {
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
             extraBufferCapacity = 1
         )
-    val debouncedFlow: Flow<List<FieldId>> = mutableSharedFlow.map { it: FieldId ->
+    override val debouncedFlow: Flow<List<FieldId>> = mutableSharedFlow.map { it: FieldId ->
         Log.d("LoginScreen", "field id changed $it")
         it
     }

@@ -2,6 +2,7 @@ package ru.mrpotz.fellowcar.utils
 
 import android.view.View
 import androidx.annotation.CheckResult
+import kotlinx.coroutines.flow.collect
 
 typealias FormBuilder = Form.() -> Unit
 typealias GenericFormField = FormField<*, *, *>
@@ -171,6 +172,11 @@ class Form constructor(
         }
     }
 
+    suspend fun startValidation()  {
+        container.debouncedFlow.collect {
+            validate(it)
+        }
+    }
     /** Signals that the form is finished being built. */
     @CheckResult
     suspend fun startRealTime(): Form {
