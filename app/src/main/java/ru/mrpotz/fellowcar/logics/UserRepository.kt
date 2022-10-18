@@ -122,7 +122,6 @@ class UserRepository(
     suspend fun getCurrentLoggedUser(): Result<User> {
         val datastoreUser = tryLoadLocalUser()
             ?: return Result.failure(UserError.NoUserAtPreferences)
-        Log.d("UserRepository", "$datastoreUser")
 
         return userLocalConverter.convertUserLocalToDomain(datastoreUser).let {
             Result.success(it)

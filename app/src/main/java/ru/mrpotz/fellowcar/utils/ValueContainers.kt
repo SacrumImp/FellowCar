@@ -32,7 +32,7 @@ abstract class AssociatedValueContainer<
     override fun invoke(p1: T?) {
         changeValue(p1)
         validationContainer.markChanged(fieldId)
-        _flow.value = toDataClass().also { Log.d("LoginScreen", "data class: $it") }
+        _flow.value = toDataClass()
     }
 
     fun <T2> asConverter(converter: (T2) -> T): ((T2) -> Unit) {
@@ -66,7 +66,6 @@ class TextAssociatedContainer(validationContainer: ValidationContainer) :
         valueContainer = TextContainer(),
         defaultValue = "") {
     override fun changeValue(newValue: CharSequence?) {
-        Log.d("LoginScreen", "changing value: $newValue")
         valueContainer.value = newValue
     }
 

@@ -1,8 +1,9 @@
 package ru.mrpotz.fellowcar.ui.screens.root
 
-import android.os.UserManager
 import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -26,10 +27,6 @@ sealed class NavTarget {
     // user selection role for registration
 }
 
-//interface ScreenNavigator {
-//    fun
-//}
-
 class RootViewModel(private val userRepository: UserRepository) : ScreenModel {
     private val _currentNavTarget = MutableStateFlow<NavTarget>(NavTarget.None)
     val currentNavTarget: StateFlow<NavTarget>
@@ -39,7 +36,6 @@ class RootViewModel(private val userRepository: UserRepository) : ScreenModel {
         // try get currently logged user
         coroutineScope.launch {
             val userResult = userRepository.getCurrentLoggedUser()
-            Log.d("RootViewModel", "$userResult")
             val screenToShow = if (userResult.isSuccess) {
                 // go to main
                 NavTarget.MainScreen
@@ -55,7 +51,6 @@ class RootScreen() : Screen {
     @Composable
     override fun Content() {
         val rootViewModel = rememberScreenModel {
-            Log.d("RootScreen", "dependencies: ${FellowCarApp.dependencies}")
             RootViewModel(FellowCarApp.dependencies.userManager)
         }
         val currentScreen : NavTarget by rootViewModel.currentNavTarget.collectAsState()

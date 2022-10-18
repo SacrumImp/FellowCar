@@ -37,7 +37,6 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
         // try get currently logged user
         viewModelScope.launch {
             val userResult = userRepository.getCurrentLoggedUser()
-            Log.d("RootViewModel", "$userResult")
             val screenToShow = if (userResult.isSuccess) {
                 // go to main
                 NavTarget.MainScreen

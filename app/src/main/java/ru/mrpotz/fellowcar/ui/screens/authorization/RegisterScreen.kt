@@ -18,7 +18,12 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
+import ru.mrpotz.fellowcar.FellowCarApp
+import ru.mrpotz.fellowcar.logics.UserRepository
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
@@ -26,7 +31,7 @@ import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
 import ru.mrpotz.fellowcar.utils.TextContainer
 import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
 
-class RegistrationScreenModel : ScreenModel {
+class RegistrationScreenModel(val navigator: Navigator, val userRepository: UserRepository) : ScreenModel {
     private val validationContainer = ValidationContainerImpl()
     val fullName = TextAssociatedContainer(validationContainer)
     val email = TextAssociatedContainer(validationContainer)
@@ -60,7 +65,12 @@ class RegistrationScreenModel : ScreenModel {
     }
 
     fun onLoginClick() {
-
+        if (LoginScreen in navigator.items) {
+            navigator.popUntil { it == LoginScreen }
+        } else {
+            navigator.pop()
+            navigator.push(LoginScreen)
+        }
     }
 
     fun onContinueClick() {
@@ -71,8 +81,10 @@ class RegistrationScreenModel : ScreenModel {
 object RegistrationScreen : Screen {
     @Composable
     override fun Content() {
+        val localNavigator = LocalNavigator.currentOrThrow
+
         val viewModel = rememberScreenModel() {
-            RegistrationScreenModel()
+            RegistrationScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
         val name by viewModel.fullName.flow.collectAsState()
         val passwordConfirmation by viewModel.passwordConfirmation.flow.collectAsState()
@@ -83,7 +95,8 @@ object RegistrationScreen : Screen {
             fullName = name,
             email = email,
             password = password,
-            passwordConfirmation = passwordConfirmation
+            passwordConfirmation = passwordConfirmation,
+            onLoginClick = viewModel::onLoginClick
         )
     }
 }

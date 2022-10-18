@@ -19,7 +19,6 @@ class FellowCarApp : Application() {
         val dependencies = Dependencies(UserRepository(context = this.baseContext, userLocalConverter = UserLocalConverter()))
         this.dependencies = dependencies
         _dependencies = dependencies
-        Log.d("FellowCarApp", "dependencies: $dependencies")
         super.onCreate()
     }
 

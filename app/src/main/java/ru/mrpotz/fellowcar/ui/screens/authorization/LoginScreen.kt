@@ -1,6 +1,5 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,7 +24,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
 import ru.mrpotz.fellowcar.logics.UserRepository
@@ -33,7 +31,7 @@ import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.*
 
-class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRepository) :
+class LoginScreenModel(private val navigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {
 
     private val validationContainer = ValidationContainerImpl()
@@ -57,11 +55,16 @@ class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRe
     }
 
     fun onForgotClick() {
-
+        // TODO: snack bar with message - functionality is yet to be implemented
     }
 
     fun onRegisterClick() {
-        localNavigator.push(RegistrationScreen)
+        if (RegistrationScreen in navigator.items) {
+            navigator.popUntil { it == RegistrationScreen }
+        } else {
+            navigator.pop()
+            navigator.push(RegistrationScreen)
+        }
     }
 
     fun onLoginClick() {
@@ -111,7 +114,7 @@ fun PasswordErrorableTextField(
             Row {
                 if (value.error != null)
                     Icon(Icons.Filled.Info,
-                        value.error?.description,
+                        value.error.description,
                         tint = MaterialTheme.colors.error,
                         modifier = Modifier.align(Alignment.CenterVertically))
 

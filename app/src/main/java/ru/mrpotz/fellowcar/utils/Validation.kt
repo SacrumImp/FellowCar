@@ -250,11 +250,9 @@ class ValidationContainerImpl() : ValidationContainer {
             extraBufferCapacity = 1
         )
     override val debouncedFlow: Flow<List<FieldId>> = mutableSharedFlow.map { it: FieldId ->
-        Log.d("LoginScreen", "field id changed $it")
         it
     }
         .timedChunk(400L).map {
-            Log.d("LoginScreen", "field id list $it")
             it
         }
 
@@ -263,7 +261,6 @@ class ValidationContainerImpl() : ValidationContainer {
     }
 
     override fun markChanged(id: FieldId) {
-        Log.d("LoginScreen", "emitting for id $id")
         mutableSharedFlow.tryEmit(id)
     }
 }
