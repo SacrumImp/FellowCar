@@ -19,6 +19,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import ru.mrpotz.fellowcar.ui.screens.authorization.LoginScreen
 import ru.mrpotz.fellowcar.ui.shared.ImagePlaceholder
+import ru.mrpotz.fellowcar.R
 
 class OnboardingViewModel(private val navigator: Navigator) : ScreenModel {
     fun onClickGetStarted() {
@@ -43,15 +44,17 @@ object OnboardingScreen : Screen {
 fun FellowCarTitleHeader() {
     Row(verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center) {
-        ImagePlaceholder(x = 48.dp)
+        ImagePlaceholder(x = 48.dp, id = R.drawable.logo)
         Spacer(modifier = Modifier.width(8.dp))
         ColoredTitleText(blackPart = "Fellow", bluePart = "Car")
     }
 }
 
 @Composable
-fun OnboardingScreen(modifier: Modifier = Modifier,
-                     onClickGetStarted: () -> Unit) {
+fun OnboardingScreen(
+    modifier: Modifier = Modifier,
+    onClickGetStarted: () -> Unit,
+) {
     Column(
         modifier = modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -62,7 +65,7 @@ fun OnboardingScreen(modifier: Modifier = Modifier,
     ) {
         FellowCarTitleHeader()
         Spacer(Modifier.height(24.dp))
-        ImagePlaceholder(x = 204.dp, y = 156.dp)
+        ImagePlaceholder(x = 232.dp, y = 232.dp, id = R.drawable.onbording)
         Spacer(Modifier.height(24.dp))
         Text(text = "Welcome to FellowCar,",
             fontWeight = FontWeight.Bold,

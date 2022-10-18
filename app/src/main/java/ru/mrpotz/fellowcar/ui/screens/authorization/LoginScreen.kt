@@ -1,31 +1,64 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
 import ru.mrpotz.fellowcar.logics.UserRepository
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
+import ru.mrpotz.fellowcar.utils.FieldId
+import ru.mrpotz.fellowcar.utils.Form
+import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
+import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
 
-class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRepository) : ScreenModel {
-    fun onPasswordInput(newValue : String, ) {
+class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRepository) :
+    ScreenModel {
+
+    private val validationContainer = ValidationContainerImpl()
+    val email = TextAssociatedContainer(validationContainer)
+    val password = TextAssociatedContainer(validationContainer)
+    private val form = Form(validationContainer) {
+    }.apply {
+        input(password.fieldId, password.valueContainer) {
+            isNotEmpty()
+        }
+        input(email.fieldId, email.valueContainer) {
+            isNotEmpty()
+            isEmail()
+        }
     }
 
-    fun onEmailInputChange(newValue : String, ) {
+    init {
+        coroutineScope.launch {
+            launch {
+                validationContainer.debouncedFlow.collect { it : List<FieldId> ->
+                    Log.d("LoginScreen", "collect happened, $it")
+                    val result = form.validate(it)
+                }
+            }
+        }
     }
 
     fun onForgotClick() {
@@ -49,25 +82,44 @@ object LoginScreen : Screen {
         val model = rememberScreenModel {
             LoginScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
-        LoginScreen()
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Text("this is login screen")
+        val emailValue by model.email.value.collectAsState()
+        val emailError by model.email.errorValue.collectAsState()
+        val password by model.password.value.collectAsState()
+        val passwordError by model.password.errorValue.collectAsState()
+
+        val passwordInput = remember {
+            model.password.asConverter<String> { it }
         }
+        val emailInput = remember {
+            model.email.asConverter<String> { it }
+        }
+        LoginScreenComposable(
+            emailValue = emailValue.toString(),
+            onEmailInputChange = emailInput,
+            emailError = emailError,
+            passwordValue = password.toString(),
+            passwordError = passwordError,
+            onPasswordInput = passwordInput,
+            onForgotClick = model::onForgotClick,
+            onRegisterClick = model::onRegisterClick,
+            onLoginClick = model::onLoginClick
+        )
     }
 }
 
 @Composable
-fun LoginScreen(
+fun LoginScreenComposable(
     emailValue: String = "",
-    onEmailInputChange: (newValue : String, ) -> Unit = { },
+    emailError: String? = null,
+    onEmailInputChange: (newValue: String) -> Unit = { },
     passwordValue: String = "",
-    onPasswordInput: (newValue : String, ) -> Unit = { },
+    passwordError: String? = null,
+    onPasswordInput: (newValue: String) -> Unit = { },
     onForgotClick: () -> Unit = { },
     onRegisterClick: () -> Unit = { },
     onLoginClick: () -> Unit = { },
 ) {
-
     Column(
         modifier = Modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -77,7 +129,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         FellowCarTitleHeader()
-
+        var passwordVisibility by remember { mutableStateOf(false) }
         Column(Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
@@ -94,6 +146,11 @@ fun LoginScreen(
             Spacer(Modifier.size(16.dp))
             TextField(value = emailValue,
                 onValueChange = onEmailInputChange,
+                isError = emailError != null,
+                trailingIcon = {
+                    if (emailError != null)
+                        Icon(Icons.Filled.Info, emailError, tint = MaterialTheme.colors.error)
+                },
                 singleLine = true,
                 label = {
                     Text("Email")
@@ -105,6 +162,28 @@ fun LoginScreen(
                 label = {
                     Text("Password")
                 },
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    Row {
+                        if (passwordError != null)
+                            Icon(Icons.Filled.Info,
+                                passwordError,
+                                tint = MaterialTheme.colors.error,
+                                modifier = Modifier.align(Alignment.CenterVertically))
+
+                        IconButton(onClick = {
+                            passwordVisibility = !passwordVisibility
+                        }, modifier = Modifier.align(Alignment.CenterVertically)) {
+                            val image = if (passwordVisibility)
+                                Icons.Filled.Visibility
+                            else Icons.Filled.VisibilityOff
+                            val description =
+                                if (passwordVisibility) "Hide password" else "Show password"
+                            Icon(imageVector = image, description)
+                        }
+                    }
+                },
+                isError = passwordError != null,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.size(16.dp))
@@ -134,13 +213,12 @@ fun LoginScreen(
                 .height(48.dp)) {
                 Text(text = "Login", style = MaterialTheme.typography.h6)
             }
-
         }
     }
 }
 
-@Preview
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
-}
+//@Preview
+//@Composable
+//fun LoginScreenPreview() {
+//    LoginScreen()
+//}
