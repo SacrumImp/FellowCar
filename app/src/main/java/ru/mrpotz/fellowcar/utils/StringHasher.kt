@@ -41,5 +41,3 @@ object StringHasher {
         return String(hexDigits)
     }
 }
-
-

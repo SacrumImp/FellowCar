@@ -14,19 +14,25 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import ru.mrpotz.fellowcar.ui.screens.authorization.LoginScreen
 import ru.mrpotz.fellowcar.ui.shared.ImagePlaceholder
+import ru.mrpotz.fellowcar.R
 
-class OnboardingViewModel : ScreenModel {
+class OnboardingViewModel(private val navigator: Navigator) : ScreenModel {
     fun onClickGetStarted() {
-
+        navigator.push(LoginScreen)
     }
 }
 
 object OnboardingScreen : Screen {
     @Composable
     override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
         val onboardingScreenModel = rememberScreenModel {
-            OnboardingViewModel()
+            OnboardingViewModel(navigator)
         }
         OnboardingScreen(
             onClickGetStarted = onboardingScreenModel::onClickGetStarted
@@ -35,7 +41,20 @@ object OnboardingScreen : Screen {
 }
 
 @Composable
-fun OnboardingScreen(modifier: Modifier = Modifier, onClickGetStarted: () -> Unit) {
+fun FellowCarTitleHeader() {
+    Row(verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center) {
+        ImagePlaceholder(x = 48.dp, id = R.drawable.logo)
+        Spacer(modifier = Modifier.width(8.dp))
+        ColoredTitleText(blackPart = "Fellow", bluePart = "Car")
+    }
+}
+
+@Composable
+fun OnboardingScreen(
+    modifier: Modifier = Modifier,
+    onClickGetStarted: () -> Unit,
+) {
     Column(
         modifier = modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -44,14 +63,9 @@ fun OnboardingScreen(modifier: Modifier = Modifier, onClickGetStarted: () -> Uni
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center) {
-            ImagePlaceholder(x = 48.dp)
-            Spacer(modifier = Modifier.width(8.dp))
-            ColoredTitleText(blackPart = "Fellow", bluePart = "Car")
-        }
+        FellowCarTitleHeader()
         Spacer(Modifier.height(24.dp))
-        ImagePlaceholder(x = 204.dp, y = 156.dp)
+        ImagePlaceholder(x = 232.dp, y = 232.dp, id = R.drawable.onbording)
         Spacer(Modifier.height(24.dp))
         Text(text = "Welcome to FellowCar,",
             fontWeight = FontWeight.Bold,
