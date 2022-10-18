@@ -61,7 +61,6 @@ abstract class AssociatedValueContainer<
     }
 }
 
-@Immutable
 class TextAssociatedContainer(validationContainer: ValidationContainer) :
     AssociatedValueContainer<TextContainer, CharSequence, TextContainer.DataClass>(validationContainer = validationContainer,
         valueContainer = TextContainer(),

@@ -100,10 +100,10 @@ fun RegistrationScreen(
     val scrollableState = rememberScrollState()
     Column(
         modifier = Modifier
-            .verticalScroll(scrollableState)
-            .padding(horizontal = 24.dp, vertical = 16.dp)
             .fillMaxHeight()
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .verticalScroll(scrollableState)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
