@@ -24,30 +24,36 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
+import ru.mrpotz.fellowcar.utils.Form
+import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
+import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
 
 class RegistrationScreenModel : ScreenModel {
-    val name = MutableStateFlow("")
-    val email = MutableStateFlow("")
-    val password = MutableStateFlow("")
-    val passwordConfirmation = MutableStateFlow("")
+    private val validationContainer = ValidationContainerImpl()
+    val fullName = TextAssociatedContainer(validationContainer)
+    val email = TextAssociatedContainer(validationContainer)
+    val password = TextAssociatedContainer(validationContainer)
+    val passwordConfirmation = TextAssociatedContainer(validationContainer)
 
-    fun onFullNameValue(newValue: String) {
-
+    private val form = Form(validationContainer) {
+    }.apply {
+        input(fullName.fieldId, fullName.valueContainer) {
+            isNotEmpty()
+        }
+        input(email.fieldId, email.valueContainer) {
+            isNotEmpty()
+            isEmail()
+        }
+        input(password.fieldId, password.valueContainer) {
+            isNotEmpty()
+        }
+        input(passwordConfirmation.fieldId, passwordConfirmation.valueContainer) {
+            isNotEmpty()
+//            assert("passwords don't match") { confirmationContainer ->
+////                confirmationContainer.value == password.value
+//            }
+        }
     }
-
-    fun onEmailValue(newValue: String) {
-
-    }
-
-    fun onPasswordValue(newValue: String) {
-
-    }
-
-    fun onPasswordConfirmationValue(newValue: String) {
-
-    }
-
-
 }
 
 object RegistrationScreen : Screen {
@@ -56,21 +62,21 @@ object RegistrationScreen : Screen {
         val viewModel = rememberScreenModel() {
             RegistrationScreenModel()
         }
-        val name by viewModel.name.collectAsState()
-        val passwordConfirmation by viewModel.passwordConfirmation.collectAsState()
-        val email by viewModel.email.collectAsState()
-        val password by viewModel.password.collectAsState()
-
-        RegistrationScreen(
-            onFullNameValue = viewModel::onFullNameValue,
-            onEmailValue = viewModel::onEmailValue,
-            onPasswordConfirmationValue = viewModel::onPasswordConfirmationValue,
-            onPasswordValue = viewModel::onPasswordValue,
-            fullName = name,
-            passwordConfirmationValue = passwordConfirmation,
-            passwordValue = password,
-            email = email
-        )
+//        val name by viewModel.name.collectAsState()
+//        val passwordConfirmation by viewModel.passwordConfirmation.collectAsState()
+//        val email by viewModel.email.collectAsState()
+//        val password by viewModel.password.collectAsState()
+//
+//        RegistrationScreen(
+//            onFullNameValue = viewModel::onFullNameValue,
+//            onEmailValue = viewModel::onEmailValue,
+//            onPasswordConfirmationValue = viewModel::onPasswordConfirmationValue,
+//            onPasswordValue = viewModel::onPasswordValue,
+//            fullName = name,
+//            passwordConfirmationValue = passwordConfirmation,
+//            passwordValue = password,
+//            email = email
+//        )
     }
 }
 

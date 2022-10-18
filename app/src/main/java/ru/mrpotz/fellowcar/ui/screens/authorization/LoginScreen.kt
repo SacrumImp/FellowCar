@@ -23,15 +23,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
 import ru.mrpotz.fellowcar.logics.UserRepository
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
-import ru.mrpotz.fellowcar.utils.FieldId
-import ru.mrpotz.fellowcar.utils.Form
-import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
-import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
+import ru.mrpotz.fellowcar.utils.*
 
 class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {
@@ -53,7 +51,7 @@ class LoginScreenModel(val localNavigator: Navigator, val userRepository: UserRe
     init {
         coroutineScope.launch {
             launch {
-                validationContainer.debouncedFlow.collect { it : List<FieldId> ->
+                validationContainer.debouncedFlow.collect { it: List<FieldId> ->
                     Log.d("LoginScreen", "collect happened, $it")
                     val result = form.validate(it)
                 }
@@ -83,24 +81,12 @@ object LoginScreen : Screen {
             LoginScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
 
-        val emailValue by model.email.value.collectAsState()
-        val emailError by model.email.errorValue.collectAsState()
-        val password by model.password.value.collectAsState()
-        val passwordError by model.password.errorValue.collectAsState()
+        val email by model.email.flow.collectAsState()
+        val password by model.password.flow.collectAsState()
 
-        val passwordInput = remember {
-            model.password.asConverter<String> { it }
-        }
-        val emailInput = remember {
-            model.email.asConverter<String> { it }
-        }
         LoginScreenComposable(
-            emailValue = emailValue.toString(),
-            onEmailInputChange = emailInput,
-            emailError = emailError,
-            passwordValue = password.toString(),
-            passwordError = passwordError,
-            onPasswordInput = passwordInput,
+            emailValue = email,
+            passwordValue = password,
             onForgotClick = model::onForgotClick,
             onRegisterClick = model::onRegisterClick,
             onLoginClick = model::onLoginClick
@@ -110,12 +96,8 @@ object LoginScreen : Screen {
 
 @Composable
 fun LoginScreenComposable(
-    emailValue: String = "",
-    emailError: String? = null,
-    onEmailInputChange: (newValue: String) -> Unit = { },
-    passwordValue: String = "",
-    passwordError: String? = null,
-    onPasswordInput: (newValue: String) -> Unit = { },
+    emailValue: TextContainer.DataClass = TextContainer.DataClass("", null),
+    passwordValue: TextContainer.DataClass = TextContainer.DataClass("", null),
     onForgotClick: () -> Unit = { },
     onRegisterClick: () -> Unit = { },
     onLoginClick: () -> Unit = { },
@@ -144,12 +126,14 @@ fun LoginScreenComposable(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.size(16.dp))
-            TextField(value = emailValue,
-                onValueChange = onEmailInputChange,
-                isError = emailError != null,
+            TextField(value = emailValue.value.toString(),
+                onValueChange = { emailValue.callback?.invoke(it) },
+                isError = emailValue.error != null,
                 trailingIcon = {
-                    if (emailError != null)
-                        Icon(Icons.Filled.Info, emailError, tint = MaterialTheme.colors.error)
+                    if (emailValue.error != null)
+                        Icon(Icons.Filled.Info,
+                            emailValue.error?.description,
+                            tint = MaterialTheme.colors.error)
                 },
                 singleLine = true,
                 label = {
@@ -158,16 +142,18 @@ fun LoginScreenComposable(
                 modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.size(8.dp))
             TextField(
-                value = passwordValue, onValueChange = onPasswordInput, singleLine = true,
+                value = passwordValue.value.toString(),
+                onValueChange = { passwordValue.callback?.invoke(it) },
+                singleLine = true,
                 label = {
                     Text("Password")
                 },
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     Row {
-                        if (passwordError != null)
+                        if (passwordValue.error != null)
                             Icon(Icons.Filled.Info,
-                                passwordError,
+                                passwordValue.error?.description,
                                 tint = MaterialTheme.colors.error,
                                 modifier = Modifier.align(Alignment.CenterVertically))
 
@@ -183,7 +169,7 @@ fun LoginScreenComposable(
                         }
                     }
                 },
-                isError = passwordError != null,
+                isError = passwordValue.error != null,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.size(16.dp))
@@ -192,7 +178,6 @@ fun LoginScreenComposable(
                 Text(text = "Forgot password",
                     color = LinkColor,
                     textDecoration = TextDecoration.Underline)
-
             }
         }
 

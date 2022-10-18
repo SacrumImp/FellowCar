@@ -6,22 +6,40 @@ import androidx.annotation.CheckResult
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
 interface ValueContainer<T> {
     val value: T?
     var error: FieldError?
     var onError: ((FieldError?) -> Unit)?
+
+    fun toDataClass(): DataClass<T>
+
+    interface DataClass<T> {
+        val value: T?
+        val error: FieldError?
+        var callback: ((T?) -> Unit)?
+    }
 }
 
 open class TextContainer() : ValueContainer<CharSequence> {
     override var value: CharSequence? = ""
     override var error: FieldError? = null
     override var onError: ((FieldError?) -> Unit)? = null
+    private var localDataClass: DataClass? = null
+
+    class DataClass constructor(
+        override val value: CharSequence?,
+        override val error: FieldError?,
+        override var callback: ((CharSequence?) -> Unit)?,
+    ) :
+        ValueContainer.DataClass<CharSequence> {
+    }
+
+    override fun toDataClass(): ValueContainer.DataClass<CharSequence> {
+        return DataClass(value, error, null)
+    }
 }
 
 
@@ -29,6 +47,19 @@ open class CheckableContainer() : ValueContainer<Boolean> {
     override var value: Boolean = false
     override var error: FieldError? = null
     override var onError: ((FieldError?) -> Unit)? = null
+    private var localDataClass: DataClass? = null
+
+    class DataClass constructor(
+        override val value: Boolean?,
+        override val error: FieldError?,
+        override var callback: ((Boolean?) -> Unit)?,
+    ) :
+        ValueContainer.DataClass<Boolean> {
+    }
+
+    override fun toDataClass(): ValueContainer.DataClass<Boolean> {
+        return DataClass(value, error, null)
+    }
 }
 
 abstract class Assertion<T, A> where A : Assertion<T, A> {
@@ -104,6 +135,27 @@ class NotEmptyAssertion internal constructor() : Assertion<TextContainer, NotEmp
         valueContainer.value?.isNotEmpty() ?: false
 
     override fun defaultDescription() = "cannot be empty"
+}
+
+
+/** @author Aidan Follestad (@afollestad) */
+class CustomMatchAssertion<T>(
+    assertionDescription: String,
+    private val assertion: (T) -> Boolean,
+) : Assertion<T, CustomMatchAssertion<T>>() {
+    init {
+        if (assertionDescription.trim().isEmpty()) {
+            error("Custom assertion descriptions should not be empty.")
+        }
+        description(assertionDescription)
+    }
+
+    override fun isValid(valueContainer: T): Boolean {
+        return assertion(valueContainer)
+    }
+
+    override fun defaultDescription() = "no description set"
+
 }
 
 open class FieldValue<T : Any>(open val value: T?, open val valueType: KClass<T>) {
@@ -308,6 +360,11 @@ class CheckableField(
     fieldId) {
     fun isChecked() = assert(CheckedStateAssertion(true))
     fun isNotChecked() = assert(CheckedStateAssertion(false))
+    fun assert(
+        description: String,
+        matcher: (CheckableContainer) -> Boolean,
+    ) = assert(CustomMatchAssertion(description, matcher))
+
     override fun obtainValue(): FieldValue<Boolean> {
         return BooleanFieldValue(
             valueType = Boolean::class,
@@ -334,6 +391,11 @@ open class InputField(
 
     fun isNotEmpty() = assert(NotEmptyAssertion())
     fun isEmail() = assert(EmailAssertion())
+    fun assert(
+        description: String,
+        matcher: (TextContainer) -> Boolean,
+    ) = assert(CustomMatchAssertion(description, matcher))
+
 
     override fun obtainValue(): FieldValue<CharSequence>? {
         val currentValue = valueContainer.value ?: return null
