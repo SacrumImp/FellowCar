@@ -85,7 +85,7 @@ class UserLocalConverter() {
             joinedCommunities = listOf(),
             rating = 5.0,
             profile = Profile(description = null),
-            email = ValidEmail(userLocal.email)
+            email = userLocal.email
         )
     }
 
@@ -93,7 +93,7 @@ class UserLocalConverter() {
         return UserLocal(
             userId = user.id,
             name = user.name,
-            email = user.name,
+            email = user.email,
             passwordHash = passwordHash
         )
     }

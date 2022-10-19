@@ -1,5 +1,6 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -27,6 +29,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
+import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
 import ru.mrpotz.fellowcar.logics.*
 import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
@@ -39,13 +42,12 @@ import java.util.concurrent.Flow
 
 class LoginScreenModel(private val navigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {
-    val snackbarMessages : MutableStateFlow<SnackbarDataUi?> = MutableStateFlow(null)
+    val snackbarMessages: MutableStateFlow<SnackbarDataUi?> = MutableStateFlow(null)
 
     private val validationContainer = ValidationContainerImpl()
     val email = TextAssociatedContainer(validationContainer)
     val password = TextAssociatedContainer(validationContainer)
-    private val form = Form(validationContainer) {
-    }.apply {
+    private val form = Form(validationContainer) {}.apply {
         input(password.fieldId, password.valueContainer) {
             isNotEmpty()
         }
@@ -65,11 +67,15 @@ class LoginScreenModel(private val navigator: Navigator, val userRepository: Use
         // TODO: snack bar with message - functionality is yet to be implemented
     }
 
+    fun onSnackbarResult(snackbarResult: SnackbarResult): Unit {
+        snackbarMessages.value = null
+    }
+
     fun onRegisterClick() {
         if (RegistrationScreen in navigator.items) {
             navigator.popUntil { it == RegistrationScreen }
         } else {
-            navigator.pop()
+//            navigator.pop()
             navigator.push(RegistrationScreen)
         }
     }
@@ -78,27 +84,32 @@ class LoginScreenModel(private val navigator: Navigator, val userRepository: Use
         val formResult = form.validate()
         if (formResult.success()) {
             coroutineScope.launch {
-                val loggedInUser = userRepository.logUser(
-                    loggingData = LoggingData(
-                        email = ValidEmail(email.valueContainer.value!!.toString()),
-                        password = Password(password = password.valueContainer.value!!.toString())
-                    )
-                )
+                val loggedInUser =
+                    userRepository.logUser(loggingData = LoggingData(email = ValidEmail(email.valueContainer.value!!.toString()),
+                        password = Password(password = password.valueContainer.value!!.toString())))
                 if (loggedInUser.isFailure) {
                     val message = (loggedInUser.exceptionOrNull() as? UserError)?.message
                     if (message != null) {
-                        snackbarMessages.value = SnackbarDataUi(message, null, duration = SnackbarDuration.Short)
+                        snackbarMessages.value =
+                            SnackbarDataUi.create(message, null, duration = SnackbarDuration.Short)
                     }
                 } else {
-                    snackbarMessages.value = SnackbarDataUi("Login success", null, duration = SnackbarDuration.Short)
+                    snackbarMessages.value = SnackbarDataUi.create("Login success",
+                        null,
+                        duration = SnackbarDuration.Short)
                 }
             }
         } else {
-            snackbarMessages.value = SnackbarDataUi("fill all required fields", null, duration = SnackbarDuration.Short)
+            snackbarMessages.value = SnackbarDataUi.create("fill all required fields",
+                null,
+                duration = SnackbarDuration.Short)
         }
     }
 }
 
+suspend fun SnackbarHostState.showSnackbar(snackbarDataUi: SnackbarDataUi): SnackbarResult {
+    return showSnackbar(snackbarDataUi.message, snackbarDataUi.actionLabel, snackbarDataUi.duration)
+}
 
 object LoginScreen : Screen {
     @Composable
@@ -108,16 +119,25 @@ object LoginScreen : Screen {
             LoginScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
 
+        val snackbarMessage by model.snackbarMessages.collectAsState()
+        val scaffoldState = ScaffoldCompositionLocal.current
+        Log.d("LoginScreen", "message: $snackbarMessage")
+        if (snackbarMessage != null) {
+            LaunchedEffect(key1 = scaffoldState) {
+                Log.d("LoginScreen", "launched effect: $snackbarMessage")
+                val result = scaffoldState.snackbarHostState.showSnackbar(snackbarMessage!!)
+                model.onSnackbarResult(result)
+            }
+        }
+
         val email by model.email.flow.collectAsState()
         val password by model.password.flow.collectAsState()
 
-        LoginScreenComposable(
-            emailValue = email,
+        LoginScreenComposable(emailValue = email,
             passwordValue = password,
             onForgotClick = model::onForgotClick,
             onRegisterClick = model::onRegisterClick,
-            onLoginClick = model::onLoginClick
-        )
+            onLoginClick = model::onLoginClick)
     }
 }
 
@@ -129,8 +149,7 @@ fun PasswordErrorableTextField(
     ) {
     var passwordVisibility by remember { mutableStateOf(false) }
 
-    TextField(
-        value = value.value.toString(),
+    TextField(value = value.value.toString(),
         onValueChange = { value.callback?.invoke(it) },
         singleLine = true,
         label = {
@@ -139,27 +158,23 @@ fun PasswordErrorableTextField(
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
             Row {
-                if (value.error != null)
-                    Icon(Icons.Filled.Info,
-                        value.error.description,
-                        tint = MaterialTheme.colors.error,
-                        modifier = Modifier.align(Alignment.CenterVertically))
+                if (value.error != null) Icon(Icons.Filled.Info,
+                    value.error.description,
+                    tint = MaterialTheme.colors.error,
+                    modifier = Modifier.align(Alignment.CenterVertically))
 
                 IconButton(onClick = {
                     passwordVisibility = !passwordVisibility
                 }, modifier = Modifier.align(Alignment.CenterVertically)) {
-                    val image = if (passwordVisibility)
-                        Icons.Filled.Visibility
+                    val image = if (passwordVisibility) Icons.Filled.Visibility
                     else Icons.Filled.VisibilityOff
-                    val description =
-                        if (passwordVisibility) "Hide password" else "Show password"
+                    val description = if (passwordVisibility) "Hide password" else "Show password"
                     Icon(imageVector = image, description)
                 }
             }
         },
         isError = value.error != null,
-        modifier = Modifier.fillMaxWidth()
-    )
+        modifier = Modifier.fillMaxWidth())
 }
 
 @Composable
@@ -171,10 +186,9 @@ fun ErrorableTextField(
         onValueChange = { value.callback?.invoke(it) },
         isError = value.error != null,
         trailingIcon = {
-            if (value.error != null)
-                Icon(Icons.Filled.Info,
-                    value.error.description,
-                    tint = MaterialTheme.colors.error)
+            if (value.error != null) Icon(Icons.Filled.Info,
+                value.error.description,
+                tint = MaterialTheme.colors.error)
         },
         singleLine = true,
         label = {
@@ -227,8 +241,7 @@ fun LoginScreenComposable(
         }
 
         Column(Modifier.fillMaxWidth()) {
-            Row(Modifier
-                .fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 Text("Don't have an account? ", Modifier.alignByBaseline())
                 TextButton(onClick = onRegisterClick, Modifier.alignByBaseline()) {
                     Text(text = "Register",
@@ -247,8 +260,8 @@ fun LoginScreenComposable(
     }
 }
 
-//@Preview
-//@Composable
-//fun LoginScreenPreview() {
-//    LoginScreen()
-//}
+@Preview(backgroundColor = 0xFFFFFFFF)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreenComposable()
+}

@@ -1,10 +1,12 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,9 +23,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
-import ru.mrpotz.fellowcar.logics.UserRepository
+import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
+import ru.mrpotz.fellowcar.logics.*
+import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
@@ -31,12 +36,14 @@ import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
 import ru.mrpotz.fellowcar.utils.TextContainer
 import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
 
-class RegistrationScreenModel(val navigator: Navigator, val userRepository: UserRepository) : ScreenModel {
+class RegistrationScreenModel(val navigator: Navigator, val userRepository: UserRepository) :
+    ScreenModel {
     private val validationContainer = ValidationContainerImpl()
     val fullName = TextAssociatedContainer(validationContainer)
     val email = TextAssociatedContainer(validationContainer)
     val password = TextAssociatedContainer(validationContainer)
     val passwordConfirmation = TextAssociatedContainer(validationContainer)
+    val snackbarMessages: MutableStateFlow<SnackbarDataUi?> = MutableStateFlow(null)
 
     private val form = Form(validationContainer) {
     }.apply {
@@ -68,13 +75,45 @@ class RegistrationScreenModel(val navigator: Navigator, val userRepository: User
         if (LoginScreen in navigator.items) {
             navigator.popUntil { it == LoginScreen }
         } else {
-            navigator.pop()
+//            navigator.pop()
             navigator.push(LoginScreen)
         }
     }
 
-    fun onContinueClick() {
+    fun onSnackbarResult(snackbarResult: SnackbarResult): Unit {
+        snackbarMessages.value = null
+    }
 
+    fun onContinueClick() {
+        val formResult = form.validate()
+        if (formResult.success()) {
+            coroutineScope.launch {
+                val registeredUser = userRepository.registerUser(
+                    registerData = RegisterData(
+                        email = ValidEmail(email.valueContainer.value!!.toString()),
+                        password = Password(password = password.valueContainer.value!!.toString()),
+                        passwordConfirmation = Password(password = passwordConfirmation.valueContainer.value!!.toString()),
+                        fullName = fullName.valueContainer.value!!
+                    )
+                )
+                if (registeredUser.isFailure) {
+                    val message = (registeredUser.exceptionOrNull() as? UserError)?.message
+                    if (message != null) {
+                        Log.d("LoginScreen", "message: $message")
+                        snackbarMessages.value =
+                            SnackbarDataUi.create(message, null, duration = SnackbarDuration.Short)
+                    }
+                } else {
+                    snackbarMessages.value = SnackbarDataUi.create("Register success",
+                        null,
+                        duration = SnackbarDuration.Short)
+                }
+            }
+        } else {
+            snackbarMessages.value = SnackbarDataUi.create("fill all required fields",
+                null,
+                duration = SnackbarDuration.Short)
+        }
     }
 }
 
@@ -86,6 +125,15 @@ object RegistrationScreen : Screen {
         val viewModel = rememberScreenModel() {
             RegistrationScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
+        val snackbarMessage by viewModel.snackbarMessages.collectAsState()
+        val scaffoldState = ScaffoldCompositionLocal.current
+        if (snackbarMessage != null) {
+            LaunchedEffect(key1 = scaffoldState) {
+                val result = scaffoldState.snackbarHostState.showSnackbar(snackbarMessage!!)
+                viewModel.onSnackbarResult(result)
+            }
+        }
+
         val name by viewModel.fullName.flow.collectAsState()
         val passwordConfirmation by viewModel.passwordConfirmation.flow.collectAsState()
         val email by viewModel.email.flow.collectAsState()
@@ -96,7 +144,8 @@ object RegistrationScreen : Screen {
             email = email,
             password = password,
             passwordConfirmation = passwordConfirmation,
-            onLoginClick = viewModel::onLoginClick
+            onLoginClick = viewModel::onLoginClick,
+            onContinueClick = viewModel::onContinueClick
         )
     }
 }
