@@ -24,15 +24,22 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
-import ru.mrpotz.fellowcar.logics.UserRepository
+import ru.mrpotz.fellowcar.logics.*
+import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
-import ru.mrpotz.fellowcar.utils.*
+import ru.mrpotz.fellowcar.utils.Form
+import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
+import ru.mrpotz.fellowcar.utils.TextContainer
+import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
+import java.util.concurrent.Flow
 
 class LoginScreenModel(private val navigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {
+    val snackbarMessages : MutableStateFlow<SnackbarDataUi?> = MutableStateFlow(null)
 
     private val validationContainer = ValidationContainerImpl()
     val email = TextAssociatedContainer(validationContainer)
@@ -68,7 +75,27 @@ class LoginScreenModel(private val navigator: Navigator, val userRepository: Use
     }
 
     fun onLoginClick() {
-
+        val formResult = form.validate()
+        if (formResult.success()) {
+            coroutineScope.launch {
+                val loggedInUser = userRepository.logUser(
+                    loggingData = LoggingData(
+                        email = ValidEmail(email.valueContainer.value!!.toString()),
+                        password = Password(password = password.valueContainer.value!!.toString())
+                    )
+                )
+                if (loggedInUser.isFailure) {
+                    val message = (loggedInUser.exceptionOrNull() as? UserError)?.message
+                    if (message != null) {
+                        snackbarMessages.value = SnackbarDataUi(message, null, duration = SnackbarDuration.Short)
+                    }
+                } else {
+                    snackbarMessages.value = SnackbarDataUi("Login success", null, duration = SnackbarDuration.Short)
+                }
+            }
+        } else {
+            snackbarMessages.value = SnackbarDataUi("fill all required fields", null, duration = SnackbarDuration.Short)
+        }
     }
 }
 
@@ -96,10 +123,10 @@ object LoginScreen : Screen {
 
 @Composable
 fun PasswordErrorableTextField(
-    value : TextContainer.DataClass = TextContainer.DataClass("", null, null),
-    label : String = "Password",
+    value: TextContainer.DataClass = TextContainer.DataClass("", null, null),
+    label: String = "Password",
 
-) {
+    ) {
     var passwordVisibility by remember { mutableStateOf(false) }
 
     TextField(
@@ -137,8 +164,8 @@ fun PasswordErrorableTextField(
 
 @Composable
 fun ErrorableTextField(
-    label : String,
-    value : TextContainer.DataClass = TextContainer.DataClass("", null, null)
+    label: String,
+    value: TextContainer.DataClass = TextContainer.DataClass("", null, null),
 ) {
     TextField(value = value.value.toString(),
         onValueChange = { value.callback?.invoke(it) },

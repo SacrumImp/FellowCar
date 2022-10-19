@@ -1,5 +1,7 @@
 package ru.mrpotz.fellowcar.ui.models
 
+import androidx.compose.material.SnackbarData
+import androidx.compose.material.SnackbarDuration
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -10,11 +12,20 @@ import ru.mrpotz.fellowcar.utils.StringHasher
 
 @JvmInline
 @Mock
-value class PasswordHash(val value : String)
+value class PasswordHash(val value: String)
 
 data class UiRequestedAction(
     val id: String,
 )
+
+data class SnackbarDataUi(
+    override val message: String,
+    override val actionLabel: String?,
+    override val duration: SnackbarDuration,
+) : SnackbarData {
+    override fun dismiss() {}
+    override fun performAction() {}
+}
 
 data class SnackbarErrorMessage(
     val description: String,
@@ -28,9 +39,9 @@ data class UserLocal(
     val userId: String,
     val name: String,
     val email: String,
-    val passwordHash: PasswordHash
+    val passwordHash: PasswordHash,
 ) {
-    fun compareAgainsRegisterData(registerData: RegisterData, ): Boolean {
+    fun compareAgainsRegisterData(registerData: RegisterData): Boolean {
         val comparedUser = UserLocal(
             userId = this.userId,
             name = registerData.fullName.toString(),
@@ -46,7 +57,7 @@ data class UserLocal(
             userId = this.userId,
             name = this.name,
             email = loginData.email.email,
-            passwordHash =  PasswordHash(passwordHash)
+            passwordHash = PasswordHash(passwordHash)
         )
         return comparedUser == this
     }

@@ -1,17 +1,13 @@
 package ru.mrpotz.fellowcar
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,6 +44,8 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
     }
 }
 
+val ScaffoldCompositionLocal: ProvidableCompositionLocal<ScaffoldState> = staticCompositionLocalOf { error("no scaffold state was passed") }
+
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,27 +55,35 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background) {
-                    val viewModel = viewModel<MainViewModel>(factory = viewModelFactory {
-                        initializer {
-                            MainViewModel(FellowCarApp.dependencies.userManager)
-                        }
-                    })
+                    val scaffoldState = rememberScaffoldState()
+                    CompositionLocalProvider(ScaffoldCompositionLocal provides scaffoldState) {
+                        val viewModel = viewModel<MainViewModel>(factory = viewModelFactory {
+                            initializer {
+                                MainViewModel(FellowCarApp.dependencies.userManager)
+                            }
+                        })
 
-                    val currentScreen by viewModel.currentNavTarget.collectAsState()
-
-                    val screen = when (currentScreen) {
-                        NavTarget.Onboarding -> OnboardingScreen
-                        NavTarget.Registration,
-                        NavTarget.MainScreen,
-                        NavTarget.Login,
-                        NavTarget.None,
-                        NavTarget.SelectUserRoles,
-                        -> null
-                    }
-                    if (screen != null) {
-                        Navigator(screen) { navigator ->
-                            SlideTransition(navigator = navigator)
+                        Scaffold(
+                            scaffoldState = scaffoldState
+                        ) { contentPadding ->
+                            val currentScreen by viewModel.currentNavTarget.collectAsState()
+                            val screen = when (currentScreen) {
+                                NavTarget.Onboarding -> OnboardingScreen
+                                NavTarget.Registration,
+                                NavTarget.MainScreen,
+                                NavTarget.Login,
+                                NavTarget.None,
+                                NavTarget.SelectUserRoles,
+                                -> null
+                            }
+                            if (screen != null) {
+                                Navigator(screen) { navigator ->
+                                    SlideTransition(modifier = Modifier.padding(contentPadding),
+                                        navigator = navigator)
+                                }
+                            }
                         }
+
                     }
                 }
             }
