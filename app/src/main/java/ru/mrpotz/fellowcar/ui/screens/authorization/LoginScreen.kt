@@ -121,10 +121,8 @@ object LoginScreen : Screen {
 
         val snackbarMessage by model.snackbarMessages.collectAsState()
         val scaffoldState = ScaffoldCompositionLocal.current
-        Log.d("LoginScreen", "message: $snackbarMessage")
         if (snackbarMessage != null) {
             LaunchedEffect(key1 = scaffoldState) {
-                Log.d("LoginScreen", "launched effect: $snackbarMessage")
                 val result = scaffoldState.snackbarHostState.showSnackbar(snackbarMessage!!)
                 model.onSnackbarResult(result)
             }

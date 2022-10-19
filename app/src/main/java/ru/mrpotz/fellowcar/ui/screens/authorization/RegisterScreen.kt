@@ -99,7 +99,6 @@ class RegistrationScreenModel(val navigator: Navigator, val userRepository: User
                 if (registeredUser.isFailure) {
                     val message = (registeredUser.exceptionOrNull() as? UserError)?.message
                     if (message != null) {
-                        Log.d("LoginScreen", "message: $message")
                         snackbarMessages.value =
                             SnackbarDataUi.create(message, null, duration = SnackbarDuration.Short)
                     }
