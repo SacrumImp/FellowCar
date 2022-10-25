@@ -32,6 +32,7 @@ import ru.mrpotz.fellowcar.FellowCarApp
 import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
 import ru.mrpotz.fellowcar.logics.*
 import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
+import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
@@ -94,9 +95,8 @@ class LoginScreenModel(private val navigator: Navigator, val userRepository: Use
                             SnackbarDataUi.create(message, null, duration = SnackbarDuration.Short)
                     }
                 } else {
-                    snackbarMessages.value = SnackbarDataUi.create("Login success",
-                        null,
-                        duration = SnackbarDuration.Short)
+                    navigator.popAll()
+                    navigator.replace(HomeScreen)
                 }
             }
         } else {

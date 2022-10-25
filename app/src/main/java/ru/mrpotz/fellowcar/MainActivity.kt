@@ -1,6 +1,7 @@
 package ru.mrpotz.fellowcar
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -14,12 +15,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.logics.UserRepository
+import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
 import ru.mrpotz.fellowcar.ui.screens.onboarding.OnboardingScreen
 import ru.mrpotz.fellowcar.ui.screens.root.NavTarget
 import ru.mrpotz.fellowcar.ui.theme.FellowCarTheme
@@ -28,24 +31,47 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _currentNavTarget = MutableStateFlow<NavTarget>(NavTarget.None)
     val currentNavTarget: StateFlow<NavTarget>
         get() = _currentNavTarget
+    val initialScreen : Flow<NavTarget>
+        get() = _currentNavTarget.filter { it != NavTarget.None }.take(1)
 
     init {
         // try get currently logged user
         viewModelScope.launch {
-            val userResult = userRepository.getCurrentLoggedUser()
-            val screenToShow = if (userResult.isSuccess) {
-                // go to main
-                NavTarget.MainScreen
-            } else {
-                NavTarget.Onboarding
+            val currentUser = userRepository.currentLoggedUser
+            launch {
+                currentUser.collect {
+                    val screenToShow = if (it != null) {
+                        // go to main
+                        NavTarget.MainScreen
+                    } else {
+                        NavTarget.Onboarding
+                    }
+                    _currentNavTarget.value = screenToShow
+                }
             }
-            _currentNavTarget.value = screenToShow
+            val result = userRepository.getCurrentLoggedUser()
+            if (result.isFailure) {
+                _currentNavTarget.value = NavTarget.Onboarding
+            }
         }
     }
 }
 
-val ScaffoldCompositionLocal: ProvidableCompositionLocal<ScaffoldState> = staticCompositionLocalOf { error("no scaffold state was passed") }
+val ScaffoldCompositionLocal: ProvidableCompositionLocal<ScaffoldState> =
+    staticCompositionLocalOf { error("no scaffold state was passed") }
 
+fun selectScreen(navTarget: NavTarget?) : Screen? {
+    return  when (navTarget) {
+        NavTarget.Onboarding -> OnboardingScreen
+        NavTarget.Registration,
+        NavTarget.Login,
+        NavTarget.None,
+        NavTarget.SelectUserRoles,
+        -> null
+        NavTarget.MainScreen -> HomeScreen
+        null -> null
+    }
+}
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,24 +92,24 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             scaffoldState = scaffoldState
                         ) { contentPadding ->
-                            val currentScreen by viewModel.currentNavTarget.collectAsState()
-                            val screen = when (currentScreen) {
-                                NavTarget.Onboarding -> OnboardingScreen
-                                NavTarget.Registration,
-                                NavTarget.MainScreen,
-                                NavTarget.Login,
-                                NavTarget.None,
-                                NavTarget.SelectUserRoles,
-                                -> null
-                            }
-                            if (screen != null) {
-                                Navigator(screen) { navigator ->
+                            val initialScreen by  viewModel.initialScreen.collectAsState(null)
+                            val initial = selectScreen(initialScreen)
+
+                            var navigator: Navigator? by remember { mutableStateOf(null) }
+                            Log.d("MainActivity", "screen: null, initiial: $initial")
+
+                            if (initial != null) {
+                                Log.d("MainActivity", "initial screen : $initial")
+                                Navigator(initial) { nav ->
+                                    navigator = nav
+                                    Log.d("MainActivity",
+                                        "recomposed navigator: $navigator ${nav.lastItem}")
                                     SlideTransition(modifier = Modifier.padding(contentPadding),
-                                        navigator = navigator)
+                                        navigator = nav
+                                    )
                                 }
                             }
                         }
-
                     }
                 }
             }

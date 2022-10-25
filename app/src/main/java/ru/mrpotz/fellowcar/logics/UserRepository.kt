@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.single
 import ru.mrpotz.fellowcar.models.Profile
@@ -106,6 +108,7 @@ class UserRepository(
     private val localUserDataStore = UserDataStore(context, userStore = UserStoreType.LOCAL)
     private val remoteMockUserDataStore =
         UserDataStore(context, userStore = UserStoreType.REMOTE_MOCK)
+    val currentLoggedUser : MutableSharedFlow<User?> = MutableSharedFlow()
 
     init {
 
@@ -124,6 +127,7 @@ class UserRepository(
             ?: return Result.failure(UserError.NoUserAtPreferences)
 
         return userLocalConverter.convertUserLocalToDomain(datastoreUser).let {
+            currentLoggedUser.emit(it)
             Result.success(it)
         }
     }
@@ -139,7 +143,10 @@ class UserRepository(
             return Result.failure(UserError.LoginCredentialsInvalid)
         }
         val user = userLocalConverter.convertUserLocalToDomain(userLocal = getCurrentRegisteredUser)
-        return Result.success(user)
+        return Result.success(user).also {
+            localUserDataStore.updateUser(getCurrentRegisteredUser)
+            currentLoggedUser.emit(it.getOrThrow())
+        }
     }
 
     suspend fun isUserLoggedIn(): Boolean {
@@ -180,7 +187,10 @@ class UserRepository(
                 registerData.password.password) ?: return Result.failure(
                 UserError.ImpossibleToHashPassword)))
         remoteMockUserDataStore.updateUser(newLocalUser)
-        return Result.success(newUser)
+        return Result.success(newUser).also {
+            localUserDataStore.updateUser(newLocalUser)
+            currentLoggedUser.emit(it.getOrThrow())
+        }
     }
 }
 

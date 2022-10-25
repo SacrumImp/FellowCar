@@ -28,6 +28,7 @@ import ru.mrpotz.fellowcar.FellowCarApp
 import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
 import ru.mrpotz.fellowcar.logics.*
 import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
+import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
@@ -102,9 +103,8 @@ class RegistrationScreenModel(val navigator: Navigator, val userRepository: User
                             SnackbarDataUi.create(message, null, duration = SnackbarDuration.Short)
                     }
                 } else {
-                    snackbarMessages.value = SnackbarDataUi.create("Register success",
-                        null,
-                        duration = SnackbarDuration.Short)
+                    navigator.popAll()
+                    navigator.push(HomeScreen)
                 }
             }
         } else {
