@@ -57,7 +57,6 @@ object HomeScreen : Screen {
             Scaffold(bottomBar = {
                 BottomAppBar(
                     modifier = Modifier.fillMaxWidth(),
-                    cutoutShape = RoundedCornerShape(24.dp),
                 ) {
                     TabNavigationItem(tab = SchedulingScreen)
                     TabNavigationItem(tab = CarpoolersScreen)
@@ -65,7 +64,9 @@ object HomeScreen : Screen {
                     TabNavigationItem(tab = ProfileScreen)
                 }
             }) {
-                CurrentTab()
+                Box(modifier = Modifier.padding(it)) {
+                    CurrentTab()
+                }
             }
         }
 
