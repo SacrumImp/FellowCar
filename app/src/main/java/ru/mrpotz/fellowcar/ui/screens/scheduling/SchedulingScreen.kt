@@ -108,10 +108,11 @@ fun RideCard(
         Column(modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+
                 Text(text = requestName,
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier
-                        .weight(1f)
+//                        .weight(1f)
                         .alignByBaseline())
 
 //                Surface(color = statusToColor(status),
@@ -152,15 +153,25 @@ fun RideCard(
                     style = MaterialTheme.typography.subtitle1,
                     fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.size(8.dp))
+                Spacer(Modifier.size(12.dp))
+//                Surface(modifier = Modifier
+////                    .background(statusToColor(status))
+//                    .size(8.dp)
+//                    .align(CenterVertically),
+//                    shape = CircleShape,
+//                    color = statusToColor(status)) { }
+//                Spacer(modifier = Modifier
+//                    .size(8.dp)
+//                    .align(Alignment.CenterVertically))
                 Surface(modifier = Modifier
 //                    .background(statusToColor(status))
-                    .size(8.dp)
+                    .padding(top = 2.dp)
+                    .size(6.dp)
                     .align(CenterVertically),
                     shape = CircleShape,
                     color = statusToColor(status)) { }
                 Spacer(modifier = Modifier
-                    .size(8.dp)
+                    .size(2.dp)
                     .align(Alignment.CenterVertically))
                 Text(
                     modifier = Modifier
