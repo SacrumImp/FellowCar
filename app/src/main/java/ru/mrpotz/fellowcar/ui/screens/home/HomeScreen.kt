@@ -14,6 +14,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.*
 import ru.mrpotz.fellowcar.ui.screens.carpoolers.CarpoolersScreen
@@ -45,31 +46,31 @@ private fun RowScope.TabNavigationItem(tab: Tab) {
 }
 
 object HomeScreen : Screen {
+    @OptIn(ExperimentalMaterialApi::class)
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     override fun Content() {
         val viewModel = rememberScreenModel() {
             HomeScreenModel()
         }
-        LocalNavigator.currentOrThrow.popUntilRoot()
-        Log.d("MainActivity", "items: ${LocalNavigator.currentOrThrow.items}")
-        TabNavigator(SchedulingScreen) {
-            Scaffold(bottomBar = {
-                BottomAppBar(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    TabNavigationItem(tab = SchedulingScreen)
-                    TabNavigationItem(tab = CarpoolersScreen)
-                    TabNavigationItem(tab = RewardsScreen)
-                    TabNavigationItem(tab = ProfileScreen)
-                }
-            }) {
-                Box(modifier = Modifier.padding(it)) {
-                    CurrentTab()
+        BottomSheetNavigator() {
+            TabNavigator(SchedulingScreen) {
+                Scaffold(bottomBar = {
+                    BottomAppBar(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        TabNavigationItem(tab = SchedulingScreen)
+                        TabNavigationItem(tab = CarpoolersScreen)
+                        TabNavigationItem(tab = RewardsScreen)
+                        TabNavigationItem(tab = ProfileScreen)
+                    }
+                }) {
+                    Box(modifier = Modifier.padding(it)) {
+                        CurrentTab()
+                    }
                 }
             }
         }
-
     }
 }
 

@@ -1,25 +1,19 @@
 package ru.mrpotz.fellowcar.ui.screens.scheduling
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,11 +21,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import kotlinx.coroutines.launch
-import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
 import ru.mrpotz.fellowcar.models.Request
+import ru.mrpotz.fellowcar.ui.screens.pendingride.PendingRideScreen
+import ru.mrpotz.fellowcar.ui.theme.DeclinedColor
+import ru.mrpotz.fellowcar.ui.theme.PendingColor
+import ru.mrpotz.fellowcar.ui.theme.SuccessColor
 
 class SchedulingScreenModel : ScreenModel {
 }
@@ -71,16 +69,16 @@ fun DateHeader(date: String) {
 
 fun statusToColor(status: Request.Status): Color {
     return when (status) {
-        is Request.Status.Declined -> Color.Red
-        Request.Status.InReview -> Color.Yellow
-        Request.Status.Planned -> Color.Green
+        is Request.Status.Declined -> DeclinedColor
+        Request.Status.InReview -> PendingColor
+        Request.Status.Planned -> SuccessColor
     }
 }
 
 fun statusToText(status: Request.Status): String {
     return when (status) {
         is Request.Status.Declined -> "Declined"
-        Request.Status.InReview -> "In review"
+        Request.Status.InReview -> "Pending"
         Request.Status.Planned -> "Accepted"
     }
 }
@@ -97,41 +95,22 @@ fun RideCard(
     sentRequests: String = " ",
     status: Request.Status,
 ) {
-    val current = ScaffoldCompositionLocal.current
-    val coroutineScope = rememberCoroutineScope()
+    val localNavigator = (LocalNavigator.currentOrThrow.parent)!!
     Card(shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp)), elevation = 4.dp,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp), onClick = {
-            coroutineScope.launch {
-                current.snackbarHostState.showSnackbar("card clicked")
-            }
+            localNavigator.push(PendingRideScreen)
         }) {
         Column(modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = CenterVertically) {
 
                 Text(text = requestName,
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier
-//                        .weight(1f)
                         .alignByBaseline())
-
-//                Surface(color = statusToColor(status),
-//                    modifier = Modifier.alignByBaseline(),
-//                    shape = RoundedCornerShape(4.dp)) {
-//                    Text(
-//                        modifier = Modifier
-//                            .padding(start = 4.dp,
-//                                end = 4.dp,
-//                                top = 2.dp,
-//                                bottom = 2.dp)
-//                            .alignByBaseline(),
-//                        text = statusToText(status),
-//                        style = MaterialTheme.typography.body2)
-//                }
             }
             Spacer(modifier = Modifier.size(4.dp))
-            Row() {
-
+            Row {
                 Text(
                     text = timeString,
                     style = MaterialTheme.typography.subtitle1,
@@ -154,25 +133,15 @@ fun RideCard(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.size(12.dp))
-//                Surface(modifier = Modifier
-////                    .background(statusToColor(status))
-//                    .size(8.dp)
-//                    .align(CenterVertically),
-//                    shape = CircleShape,
-//                    color = statusToColor(status)) { }
-//                Spacer(modifier = Modifier
-//                    .size(8.dp)
-//                    .align(Alignment.CenterVertically))
                 Surface(modifier = Modifier
-//                    .background(statusToColor(status))
                     .padding(top = 2.dp)
-                    .size(6.dp)
+                    .size(8.dp)
                     .align(CenterVertically),
                     shape = CircleShape,
                     color = statusToColor(status)) { }
                 Spacer(modifier = Modifier
                     .size(2.dp)
-                    .align(Alignment.CenterVertically))
+                    .align(CenterVertically))
                 Text(
                     modifier = Modifier
                         .padding(start = 4.dp,
@@ -204,7 +173,6 @@ fun DateHeaderPreview() {
 
 val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SchedulingScreenComposable() {
     val lazyColumnState = rememberLazyListState()
@@ -222,7 +190,7 @@ fun SchedulingScreenComposable() {
             item {
                 RideCard(timeString = "7:00 - 7:30",
                     requestName = "Ride to Home",
-                    status = Request.Status.Planned)
+                    status = Request.Status.InReview)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }

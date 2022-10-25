@@ -15,7 +15,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
@@ -57,7 +56,7 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
     }
 }
 
-val ScaffoldCompositionLocal: ProvidableCompositionLocal<ScaffoldState> =
+val LocalScaffoldState: ProvidableCompositionLocal<ScaffoldState> =
     staticCompositionLocalOf { error("no scaffold state was passed") }
 
 fun selectScreen(navTarget: NavTarget?) : Screen? {
@@ -82,7 +81,7 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background) {
                     val scaffoldState = rememberScaffoldState()
-                    CompositionLocalProvider(ScaffoldCompositionLocal provides scaffoldState) {
+                    CompositionLocalProvider(LocalScaffoldState provides scaffoldState) {
                         val viewModel = viewModel<MainViewModel>(factory = viewModelFactory {
                             initializer {
                                 MainViewModel(FellowCarApp.dependencies.userManager)
@@ -102,8 +101,6 @@ class MainActivity : ComponentActivity() {
                                 Log.d("MainActivity", "initial screen : $initial")
                                 Navigator(initial) { nav ->
                                     navigator = nav
-                                    Log.d("MainActivity",
-                                        "recomposed navigator: $navigator ${nav.lastItem}")
                                     SlideTransition(modifier = Modifier.padding(contentPadding),
                                         navigator = nav
                                     )

@@ -1,6 +1,5 @@
 package ru.mrpotz.fellowcar.ui.screens.authorization
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +28,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
-import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
+import ru.mrpotz.fellowcar.LocalScaffoldState
 import ru.mrpotz.fellowcar.logics.*
 import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
 import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
@@ -39,7 +38,6 @@ import ru.mrpotz.fellowcar.utils.Form
 import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
 import ru.mrpotz.fellowcar.utils.TextContainer
 import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
-import java.util.concurrent.Flow
 
 class LoginScreenModel(private val navigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {
@@ -76,7 +74,6 @@ class LoginScreenModel(private val navigator: Navigator, val userRepository: Use
         if (RegistrationScreen in navigator.items) {
             navigator.popUntil { it == RegistrationScreen }
         } else {
-//            navigator.pop()
             navigator.push(RegistrationScreen)
         }
     }
@@ -120,7 +117,7 @@ object LoginScreen : Screen {
         }
 
         val snackbarMessage by model.snackbarMessages.collectAsState()
-        val scaffoldState = ScaffoldCompositionLocal.current
+        val scaffoldState = LocalScaffoldState.current
         if (snackbarMessage != null) {
             LaunchedEffect(key1 = scaffoldState) {
                 val result = scaffoldState.snackbarHostState.showSnackbar(snackbarMessage!!)

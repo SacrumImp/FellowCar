@@ -25,7 +25,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ru.mrpotz.fellowcar.FellowCarApp
-import ru.mrpotz.fellowcar.ScaffoldCompositionLocal
+import ru.mrpotz.fellowcar.LocalScaffoldState
 import ru.mrpotz.fellowcar.logics.*
 import ru.mrpotz.fellowcar.ui.models.SnackbarDataUi
 import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
@@ -104,7 +104,7 @@ class RegistrationScreenModel(val navigator: Navigator, val userRepository: User
                     }
                 } else {
                     navigator.popAll()
-                    navigator.push(HomeScreen)
+                    navigator.replace(HomeScreen)
                 }
             }
         } else {
@@ -124,7 +124,7 @@ object RegistrationScreen : Screen {
             RegistrationScreenModel(localNavigator, FellowCarApp.dependencies.userManager)
         }
         val snackbarMessage by viewModel.snackbarMessages.collectAsState()
-        val scaffoldState = ScaffoldCompositionLocal.current
+        val scaffoldState = LocalScaffoldState.current
         if (snackbarMessage != null) {
             LaunchedEffect(key1 = scaffoldState) {
                 val result = scaffoldState.snackbarHostState.showSnackbar(snackbarMessage!!)
