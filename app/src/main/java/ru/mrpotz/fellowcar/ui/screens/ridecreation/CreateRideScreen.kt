@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -104,8 +105,10 @@ fun CreateRideScreenComposable() {
                         contentDescription = "Map")
                     Spacer(modifier = Modifier.size(24.dp))
                     Text(modifier = Modifier.alpha(0.6f).fillMaxWidth().align(CenterHorizontally),
+                        textAlign = TextAlign.Center,
                         text = "Here you will be able to review your ride information and view details on map",
-                        style = MaterialTheme.typography.subtitle1)
+                        style = MaterialTheme.typography.subtitle1
+                    )
                 }
                 OutlinedButton(onClick = {
                     val annotatedString =
@@ -139,6 +142,7 @@ fun CreateRideScreenComposable() {
                         contentDescription = "Chat Bubble")
                     Spacer(modifier = Modifier.size(24.dp))
                     Text(modifier = Modifier.alpha(0.6f).fillMaxWidth().align(CenterHorizontally),
+                        textAlign = TextAlign.Center,
                         text = "Here you will be able to edit your ride information",
                         style = MaterialTheme.typography.subtitle1)
                 }
