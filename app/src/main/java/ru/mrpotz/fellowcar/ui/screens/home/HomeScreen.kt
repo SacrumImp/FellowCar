@@ -25,6 +25,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import ru.mrpotz.fellowcar.ui.screens.carpoolers.CarpoolersScreen
 import ru.mrpotz.fellowcar.ui.screens.profile.ProfileScreen
 import ru.mrpotz.fellowcar.ui.screens.rewards.RewardsScreen
+import ru.mrpotz.fellowcar.ui.screens.ridecreation.CreateRideScreen
 import ru.mrpotz.fellowcar.ui.screens.scheduling.SchedulingScreen
 
 class HomeScreenModel : ScreenModel {
@@ -57,6 +58,7 @@ object HomeScreen : Screen {
         val viewModel = rememberScreenModel() {
             HomeScreenModel()
         }
+        val navigator = LocalNavigator.currentOrThrow
         TabNavigator(SchedulingScreen) {
             Scaffold(bottomBar = {
                 BottomAppBar(
@@ -73,7 +75,7 @@ object HomeScreen : Screen {
                 floatingActionButtonPosition = FabPosition.End,
                 floatingActionButton = {
                     if (it.current == SchedulingScreen) {
-                        FloatingActionButton(onClick = { }, shape = RoundedCornerShape(25)) {
+                        FloatingActionButton(onClick = { navigator.push(CreateRideScreen) }, shape = RoundedCornerShape(25)) {
                             Icon(painter = rememberVectorPainter(image = Icons.Outlined.Add),
                                 contentDescription = "New Ride")
                         }
