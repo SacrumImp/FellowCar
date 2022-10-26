@@ -1,0 +1,10 @@
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/bin/Debug/netcoreapp3.1/Abstractions.deps.json
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/bin/Debug/netcoreapp3.1/Abstractions.dll
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/bin/Debug/netcoreapp3.1/Abstractions.pdb
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.csproj.AssemblyReference.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.GeneratedMSBuildEditorConfig.editorconfig
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.AssemblyInfoInputs.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.AssemblyInfo.cs
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.csproj.CoreCompileInputs.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.dll
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Abstractions/obj/Debug/netcoreapp3.1/Abstractions.pdb
