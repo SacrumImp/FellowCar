@@ -5,9 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Entity.Models
 {
     [Table("users")]
-    public class Users
+    public class User
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public int Id { get; set; }
 
@@ -15,8 +15,10 @@ namespace Entity.Models
         public string Login { get; set; }
         [Column("password")]
         public string Password { get; set; }
+        [Column("email")]
+        public string Email { get; set; }
 
-        public Users()
+        public User()
         {
         }
     }
