@@ -48,7 +48,9 @@ fun PendingRideInfoScreenComposable() {
         .fillMaxWidth()
         .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
         .defaultMinSize(100.dp)) {
-        Text(text = "Pending requests", style = MaterialTheme.typography.h5)
+        Text(text = "Help", style = MaterialTheme.typography.overline)
+        Spacer(Modifier.size(8.dp))
+        Text(text = "Pending requests", style = MaterialTheme.typography.h6)
         Spacer(Modifier.size(16.dp))
         val annotatedString = buildAnnotatedString {
             append("To arrange a ride, you have to submit a request to one of the drivers from ")

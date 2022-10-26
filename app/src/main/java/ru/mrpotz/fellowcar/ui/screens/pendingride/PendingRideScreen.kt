@@ -11,6 +11,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.outlined.ChatBubble
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -296,7 +298,7 @@ fun PendingRideScreenComposable(availableDriversCase: CaseData, requestStatus: R
                 Row(Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp)) {
-                    Text(text = "Ride Status",
+                    Text(text = "Ride Status: ",
                         style = MaterialTheme.typography.h5,
                         modifier = Modifier
                             .weight(1f)
@@ -311,8 +313,28 @@ fun PendingRideScreenComposable(availableDriversCase: CaseData, requestStatus: R
                 DriversCard(availableDriversCase = availableDriversCase)
                 Spacer(Modifier.size(24.dp))
                 PendingRequestsCard()
+                Spacer(Modifier.size(24.dp))
+                Text(text = "Planned",
+                    style = MaterialTheme.typography.h5,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                Spacer(modifier = Modifier.size(24.dp))
+                PlannedRidePlaceholder()
             }
         }
+    }
+}
+
+@Composable
+fun PlannedRidePlaceholder() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Icon(modifier = Modifier
+            .size(64.dp)
+            .alpha(0.6f),
+            painter = rememberVectorPainter(image = Icons.Outlined.ChatBubbleOutline),
+            contentDescription = "Chat Bubble")
+        Spacer(modifier = Modifier.size(24.dp))
+        Text(modifier = Modifier.alpha(0.6f), text = "You haven't agreed with any drivers yet",
+            style = MaterialTheme.typography.subtitle1)
     }
 }
 
