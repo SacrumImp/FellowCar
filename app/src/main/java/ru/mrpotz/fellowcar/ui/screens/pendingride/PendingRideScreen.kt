@@ -1,19 +1,23 @@
 package ru.mrpotz.fellowcar.ui.screens.pendingride
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
@@ -27,9 +31,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.bottomSheet.LocalBottomSheetNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import ru.mrpotz.fellowcar.LocalScaffoldState
+import ru.mrpotz.fellowcar.models.Request
+import ru.mrpotz.fellowcar.ui.screens.scheduling.statusToColor
+import ru.mrpotz.fellowcar.ui.screens.scheduling.statusToText
 import ru.mrpotz.fellowcar.ui.theme.DeclinedColor
 import ru.mrpotz.fellowcar.ui.theme.PendingColor
-import ru.mrpotz.fellowcar.ui.theme.SuccessColor
+import ru.mrpotz.fellowcar.ui.theme.PrimaryMain
 
 class PendingRideScreenModel : ScreenModel {
 }
@@ -44,6 +51,7 @@ object PendingRideScreen : Screen {
             availableDriversCase = CaseData(caseType = Case.NO_DRIVERS,
                 driversFoundString = null
             ),
+            requestStatus = Request.Status.InReview
         )
     }
 }
@@ -75,8 +83,6 @@ data class CaseData(val caseType: Case, val driversFoundString: String?) {
 fun DriversCard(
     availableDriversCase: CaseData,
 ) {
-    val current = LocalScaffoldState.current
-    val coroutineScope = rememberCoroutineScope()
     Card(shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp)), elevation = 4.dp,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp), onClick = {
 
@@ -93,9 +99,7 @@ fun DriversCard(
 
             Text(
                 text = "The drivers with similar rides",
-                style = MaterialTheme.typography.subtitle1.let {
-                    it.copy(color = it.color.copy(alpha = 0.6f))
-                },
+                style = MaterialTheme.typography.subtitle1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 softWrap = true,
@@ -106,9 +110,7 @@ fun DriversCard(
             Row {
                 Text(
                     text = availableDriversCase.loadingSection(),
-                    style = MaterialTheme.typography.body2.let {
-                        it.copy(color = it.color.copy(alpha = 0.6f))
-                    },
+                    style = MaterialTheme.typography.body2,
                     textAlign = TextAlign.Start,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = true,
@@ -136,7 +138,7 @@ fun PendingRequestsCard() {
 
         }) {
         Column(modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Pending requests",
                     style = MaterialTheme.typography.h6,
@@ -146,9 +148,7 @@ fun PendingRequestsCard() {
             Spacer(modifier = Modifier.size(4.dp))
             Text(
                 text = "Requests you sent to drivers for their rides",
-                style = MaterialTheme.typography.subtitle1.let {
-                    it.copy(color = it.color.copy(alpha = 0.6f))
-                },
+                style = MaterialTheme.typography.subtitle1,
                 textAlign = TextAlign.Start,
                 overflow = TextOverflow.Ellipsis,
                 softWrap = true,
@@ -156,67 +156,123 @@ fun PendingRequestsCard() {
             Spacer(modifier = Modifier.size(12.dp))
             Divider()
             Spacer(modifier = Modifier.size(12.dp))
-            Text(
-                text = "Current status",
-                style = MaterialTheme.typography.body2.let {
-                    it.copy(color = it.color.copy(alpha = 0.6f))
-                },
-                textAlign = TextAlign.Start,
-                overflow = TextOverflow.Ellipsis,
-                softWrap = true,
-            )
-
-            Row() {
-                Column {
-
-                }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                TextWithStatusSign(text = "In review:", color = PendingColor, "3")
+                TextWithStatusSign(text = "Declined:", color = DeclinedColor, "3")
+                TextWithStatusSign(text = "Total:", color = PrimaryMain, value = "6")
             }
-            TextWithStatusSign(text = "Accepted: ", color = SuccessColor)x
-            TextWithStatusSign(text = "In review: ", color = PendingColor)
-            TextWithStatusSign(text = "Declined: ", color = DeclinedColor)
-
-            IconButton(onClick = { bottomSheetNavigator.push(PendingRideInfoScreen) },
-                modifier = Modifier.align(End)) {
-                Icon(painter = rememberVectorPainter(image = Icons.Filled.Help),
-                    contentDescription = "Help")
+            Spacer(modifier = Modifier.size(12.dp))
+            Divider()
+            Spacer(Modifier.size(4.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = { bottomSheetNavigator.show(PendingRideInfoScreen) }) {
+                    Text("Help")
+                    Spacer(Modifier.size(8.dp))
+                    Icon(painter = rememberVectorPainter(image = Icons.Filled.Help),
+                        contentDescription = "Help")
+                }
             }
         }
     }
 }
 
 @Composable
-fun TextWithStatusSign(
+fun RowScope.TextWithSign(
+    modifier: Modifier = Modifier,
     text: String,
-    color: Color,
-    value : String
+    color: Color?,
+    animate: Boolean,
 ) {
-    Column() {
-        Row {
+    Row(modifier = Modifier.alignByBaseline()) {
+        if (color != null) {
+            val alpha = if (animate) {
+                val infiniteTransition = rememberInfiniteTransition()
+                val alpha by infiniteTransition.animateFloat(
+                    initialValue = 0.3f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = keyframes {
+                            durationMillis = 2000
+                            0.7f at 1000
+                        },
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+                alpha
+            } else {
+                1f
+            }
+
             Surface(modifier = Modifier
                 .padding(top = 2.dp)
                 .size(8.dp)
+                .alpha(alpha)
                 .align(CenterVertically),
                 shape = CircleShape,
                 color = color) { }
             Spacer(modifier = Modifier
                 .size(2.dp)
                 .align(CenterVertically))
+        }
+        Text(
+            modifier = modifier
+                .padding(start = 4.dp,
+                    end = 4.dp,
+                    top = 2.dp,
+                    bottom = 2.dp)
+                .alignByBaseline(),
+            text = text,
+            style = MaterialTheme.typography.body2)
+    }
+}
+
+@Composable
+fun TextWithStatusSign(
+    text: String,
+    color: Color?,
+    value: String,
+) {
+    Surface(border = BorderStroke(0.5.dp,
+        MaterialTheme.colors.onSurface.run { copy(alpha = 0.3f) }),
+        shape = RoundedCornerShape(4.dp)) {
+        Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Row {
+                if (color != null) {
+                    Surface(modifier = Modifier
+                        .padding(top = 2.dp)
+                        .size(8.dp)
+                        .align(CenterVertically),
+                        shape = CircleShape,
+                        color = color) { }
+                    Spacer(modifier = Modifier
+                        .size(2.dp)
+                        .align(CenterVertically))
+                }
+                Text(
+                    modifier = Modifier
+                        .padding(start = 4.dp,
+                            end = 4.dp,
+                            top = 2.dp,
+                            bottom = 2.dp)
+                        .alignByBaseline(),
+                    text = text,
+                    style = MaterialTheme.typography.body2)
+            }
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp,
                         end = 4.dp,
                         top = 2.dp,
-                        bottom = 2.dp)
-                    .alignByBaseline(),
-                text = text,
+                        bottom = 2.dp),
+                text = value,
                 style = MaterialTheme.typography.body2)
         }
-
     }
 }
 
 @Composable
-fun PendingRideScreenComposable(availableDriversCase: CaseData) {
+fun PendingRideScreenComposable(availableDriversCase: CaseData, requestStatus: Request.Status) {
     val navigator = LocalNavigator.currentOrThrow
     Scaffold(topBar = {
         TopAppBar(modifier = Modifier.fillMaxWidth()) {
@@ -229,17 +285,32 @@ fun PendingRideScreenComposable(availableDriversCase: CaseData) {
                         navigator.pop()
                     }
             )
-//            Spacer(modifier = Modifier.size(16.dp))
             Text(text = "Ride to Home, 7:00-7:30", style = MaterialTheme.typography.h6)
         }
-    }) { it ->
+    }) {
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)) {
-            Spacer(modifier = Modifier.size(24.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Spacer(modifier = Modifier.size(24.dp))
+                Row(Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)) {
+                    Text(text = "Ride Status",
+                        style = MaterialTheme.typography.h5,
+                        modifier = Modifier
+                            .weight(1f)
+                            .alignByBaseline())
+                    TextWithSign(
+                        text = statusToText(status = requestStatus),
+                        color = statusToColor(requestStatus),
+                        animate = true
+                    )
+                }
+                Spacer(modifier = Modifier.size(24.dp))
                 DriversCard(availableDriversCase = availableDriversCase)
+                Spacer(Modifier.size(24.dp))
+                PendingRequestsCard()
             }
         }
     }

@@ -1,22 +1,21 @@
 package ru.mrpotz.fellowcar.ui.screens.home
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
-import cafe.adriel.voyager.navigator.tab.*
+import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabNavigator
 import ru.mrpotz.fellowcar.ui.screens.carpoolers.CarpoolersScreen
 import ru.mrpotz.fellowcar.ui.screens.profile.ProfileScreen
 import ru.mrpotz.fellowcar.ui.screens.rewards.RewardsScreen
@@ -53,21 +52,19 @@ object HomeScreen : Screen {
         val viewModel = rememberScreenModel() {
             HomeScreenModel()
         }
-        BottomSheetNavigator() {
-            TabNavigator(SchedulingScreen) {
-                Scaffold(bottomBar = {
-                    BottomAppBar(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        TabNavigationItem(tab = SchedulingScreen)
-                        TabNavigationItem(tab = CarpoolersScreen)
-                        TabNavigationItem(tab = RewardsScreen)
-                        TabNavigationItem(tab = ProfileScreen)
-                    }
-                }) {
-                    Box(modifier = Modifier.padding(it)) {
-                        CurrentTab()
-                    }
+        TabNavigator(SchedulingScreen) {
+            Scaffold(bottomBar = {
+                BottomAppBar(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    TabNavigationItem(tab = SchedulingScreen)
+                    TabNavigationItem(tab = CarpoolersScreen)
+                    TabNavigationItem(tab = RewardsScreen)
+                    TabNavigationItem(tab = ProfileScreen)
+                }
+            }) {
+                Box(modifier = Modifier.padding(it)) {
+                    CurrentTab()
                 }
             }
         }

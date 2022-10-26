@@ -1,5 +1,6 @@
 package ru.mrpotz.fellowcar.ui.screens.scheduling
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -77,9 +78,9 @@ fun statusToColor(status: Request.Status): Color {
 
 fun statusToText(status: Request.Status): String {
     return when (status) {
-        is Request.Status.Declined -> "Declined"
-        Request.Status.InReview -> "Pending"
-        Request.Status.Planned -> "Accepted"
+        is Request.Status.Declined -> "Requests declined"
+        Request.Status.InReview -> "Being planned"
+        Request.Status.Planned -> "Scheduled"
     }
 }
 
@@ -98,6 +99,7 @@ fun RideCard(
     val localNavigator = (LocalNavigator.currentOrThrow.parent)!!
     Card(shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp)), elevation = 4.dp,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp), onClick = {
+            Log.d("SchedulingScreen", "navigator: $localNavigator ${localNavigator.items}")
             localNavigator.push(PendingRideScreen)
         }) {
         Column(modifier = Modifier
@@ -128,7 +130,7 @@ fun RideCard(
             Spacer(modifier = Modifier.size(8.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Request status:",
+                    "Ride status:",
                     style = MaterialTheme.typography.subtitle1,
                     fontWeight = FontWeight.Bold,
                 )

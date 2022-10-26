@@ -1,7 +1,6 @@
 package ru.mrpotz.fellowcar
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -17,6 +16,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
     private val _currentNavTarget = MutableStateFlow<NavTarget>(NavTarget.None)
     val currentNavTarget: StateFlow<NavTarget>
         get() = _currentNavTarget
-    val initialScreen : Flow<NavTarget>
+    val initialScreen: Flow<NavTarget>
         get() = _currentNavTarget.filter { it != NavTarget.None }.take(1)
 
     init {
@@ -59,8 +59,8 @@ class MainViewModel(private val userRepository: UserRepository) : ViewModel() {
 val LocalScaffoldState: ProvidableCompositionLocal<ScaffoldState> =
     staticCompositionLocalOf { error("no scaffold state was passed") }
 
-fun selectScreen(navTarget: NavTarget?) : Screen? {
-    return  when (navTarget) {
+fun selectScreen(navTarget: NavTarget?): Screen? {
+    return when (navTarget) {
         NavTarget.Onboarding -> OnboardingScreen
         NavTarget.Registration,
         NavTarget.Login,
@@ -71,8 +71,9 @@ fun selectScreen(navTarget: NavTarget?) : Screen? {
         null -> null
     }
 }
+
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -91,19 +92,16 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             scaffoldState = scaffoldState
                         ) { contentPadding ->
-                            val initialScreen by  viewModel.initialScreen.collectAsState(null)
+                            val initialScreen by viewModel.initialScreen.collectAsState(null)
                             val initial = selectScreen(initialScreen)
 
-                            var navigator: Navigator? by remember { mutableStateOf(null) }
-                            Log.d("MainActivity", "screen: null, initiial: $initial")
-
                             if (initial != null) {
-                                Log.d("MainActivity", "initial screen : $initial")
-                                Navigator(initial) { nav ->
-                                    navigator = nav
-                                    SlideTransition(modifier = Modifier.padding(contentPadding),
-                                        navigator = nav
-                                    )
+                                BottomSheetNavigator() {
+                                    Navigator(initial) { nav ->
+                                        SlideTransition(modifier = Modifier.padding(contentPadding),
+                                            navigator = nav
+                                        )
+                                    }
                                 }
                             }
                         }
