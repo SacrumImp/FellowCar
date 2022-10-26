@@ -10,7 +10,7 @@ namespace Entity
         public AuthorizationDbContext(DbContextOptions options): base(options)
         { }
 
-        public DbSet<Users> Users { get; set; }
+        public DbSet<User> Users { get; set; }
 
     }
 }

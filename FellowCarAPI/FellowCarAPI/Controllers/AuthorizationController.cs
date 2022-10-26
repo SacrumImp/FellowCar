@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using Abstractions;
+using System.Threading.Tasks;
 using Abstractions.Authentication;
+using Abstractions.Models.Authentication;
 using Abstractions.Services;
 using Entity;
+using Entity.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -55,6 +57,30 @@ namespace FellowCarAPI.Controllers
                 };
             }
             return Unauthorized();
+
+        }
+
+        /// <summary>
+        /// Authorization process. Registration.
+        /// </summary>
+        /// <param name="params">
+        /// <returns></returns>
+        [HttpPut("/sign-up")]
+        public async Task<ActionResult> SignUpAsync([FromBody] SignUpInput inputParams)
+        {
+            try
+            {
+                await _context.Users.AddAsync(new User()
+                {
+                    Login = inputParams.Login,
+                    Password = inputParams.Password,
+                    Email = inputParams.Email
+                });
+                await _context.SaveChangesAsync();
+                return Ok();
+            } catch(Exception ex) {
+                return BadRequest();
+            }
 
         }
 
