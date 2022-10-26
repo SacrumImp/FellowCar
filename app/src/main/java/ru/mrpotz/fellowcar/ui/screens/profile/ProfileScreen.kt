@@ -11,6 +11,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import ru.mrpotz.fellowcar.ui.screens.inproduction.UnderDevelopmentScreenComposable
 
 class ProfileScreenModel : ScreenModel {
 }
@@ -41,7 +42,7 @@ object ProfileScreen : Tab {
 
 @Composable
 fun ProfileScreenComposable() {
-    Text(text = "This is profile screen stub")
+    UnderDevelopmentScreenComposable(screenTitle = "Profile")
 }
 
 @Preview
