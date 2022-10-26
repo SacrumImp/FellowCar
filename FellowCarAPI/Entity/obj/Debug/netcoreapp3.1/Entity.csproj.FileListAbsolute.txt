@@ -1,0 +1,10 @@
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/bin/Debug/netcoreapp3.1/Entity.deps.json
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/bin/Debug/netcoreapp3.1/Entity.dll
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/bin/Debug/netcoreapp3.1/Entity.pdb
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.csproj.AssemblyReference.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.GeneratedMSBuildEditorConfig.editorconfig
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.AssemblyInfoInputs.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.AssemblyInfo.cs
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.csproj.CoreCompileInputs.cache
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.dll
+/Users/vladislavalpeev/Documents/labs/FellowCar/FellowCarAPI/Entity/obj/Debug/netcoreapp3.1/Entity.pdb
