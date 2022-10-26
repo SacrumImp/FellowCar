@@ -1,0 +1,29 @@
+﻿<Properties StartupConfiguration="{E4356FDA-519E-424C-8F26-E672C14F9E1A}|Default">
+  <MonoDevelop.Ide.ItemProperties.FellowCarAPI PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="FellowCarAPI/Startup.cs">
+    <Files>
+      <File FileName="FellowCarAPI/Controllers/WeatherForecastController.cs" Line="1" Column="1" />
+      <File FileName="FellowCarAPI/Properties/launchSettings.json" Line="21" Column="29" />
+      <File FileName="FellowCarAPI/Startup.cs" Line="50" Column="6" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="FellowCarAPI" expanded="True">
+            <Node name="FellowCarAPI" expanded="True">
+              <Node name="Dependencies" expanded="True" />
+              <Node name="Properties" expanded="True" />
+              <Node name="Startup.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
