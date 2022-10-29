@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import ru.mrpotz.fellowcar.logics.LoggingData
 import ru.mrpotz.fellowcar.logics.RegisterData
 import ru.mrpotz.fellowcar.logics.ValidEmail
-import ru.mrpotz.fellowcar.utils.IdIssuer
+import ru.mrpotz.validation.IdIssuer
 import ru.mrpotz.fellowcar.utils.Mock
 import ru.mrpotz.fellowcar.utils.StringHasher
 

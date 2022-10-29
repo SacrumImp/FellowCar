@@ -1,9 +1,8 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
-import android.util.Log
-import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import ru.mrpotz.validation.*
 
 abstract class AssociatedValueContainer<
         V, T : Any, D : ValueContainer.DataClass<T>>(

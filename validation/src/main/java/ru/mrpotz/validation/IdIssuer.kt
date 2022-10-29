@@ -1,4 +1,4 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
 class IdIssuer() {
     private var uniqueIdCounter: Long = 0L

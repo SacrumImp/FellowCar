@@ -35,9 +35,9 @@ import ru.mrpotz.fellowcar.ui.screens.home.HomeScreen
 import ru.mrpotz.fellowcar.ui.screens.onboarding.FellowCarTitleHeader
 import ru.mrpotz.fellowcar.ui.theme.LinkColor
 import ru.mrpotz.fellowcar.utils.Form
-import ru.mrpotz.fellowcar.utils.TextAssociatedContainer
-import ru.mrpotz.fellowcar.utils.TextContainer
-import ru.mrpotz.fellowcar.utils.ValidationContainerImpl
+import ru.mrpotz.validation.TextAssociatedContainer
+import ru.mrpotz.validation.TextContainer
+import ru.mrpotz.validation.ValidationContainerImpl
 
 class LoginScreenModel(private val navigator: Navigator, val userRepository: UserRepository) :
     ScreenModel {

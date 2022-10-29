@@ -1,8 +1,8 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
 import android.view.View
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.collect
+import ru.mrpotz.validation.*
 
 typealias FormBuilder = Form.() -> Unit
 typealias GenericFormField = FormField<*, *, *>

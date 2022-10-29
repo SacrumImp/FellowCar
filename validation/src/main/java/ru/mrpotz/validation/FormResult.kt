@@ -1,4 +1,4 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
 /**
  * Holds the validation result of a whole form.

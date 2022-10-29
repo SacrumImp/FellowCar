@@ -1,6 +1,5 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
-import android.util.Log
 import android.util.Patterns
 import androidx.annotation.CheckResult
 import kotlinx.coroutines.channels.BufferOverflow

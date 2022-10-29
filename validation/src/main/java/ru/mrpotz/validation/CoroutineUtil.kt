@@ -1,4 +1,4 @@
-package ru.mrpotz.fellowcar.utils
+package ru.mrpotz.validation
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay

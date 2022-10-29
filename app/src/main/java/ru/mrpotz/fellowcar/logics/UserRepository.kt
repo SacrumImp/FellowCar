@@ -70,7 +70,7 @@ class UserDataStore(val context: Context, val userStore: UserStoreType = UserSto
                 userLocal.writePreferences(it)
             }
         }
-
+        context.userDataStore.data
     }
 
     companion object {
