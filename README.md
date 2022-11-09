@@ -6,7 +6,6 @@
 
 ### Team Members
  - Alpeev Vladislav
- - Dzhalelova Adelina
  - Gornostaev Alexander
  - Lagunes Alejandro
  - Shashikyan Mariam
